@@ -60,8 +60,7 @@ public class ArchitectureTests
             .DoNotHaveName("Program")
             .ShouldNot()
             .HaveDependencyOnAny(
-                "ECommerce.Infrastructure.Data",
-                "ECommerce.Infrastructure.Migrations")
+                "ECommerce.Infrastructure.Persistence")
             .GetResult();
 
         result.IsSuccessful.ShouldBeTrue(FormatFailingTypes(result));
@@ -76,7 +75,7 @@ public class ArchitectureTests
             .ShouldNot()
             .HaveDependencyOnAny(
                 "Microsoft.EntityFrameworkCore",
-                "ECommerce.Infrastructure.Data")
+                "ECommerce.Infrastructure.Persistence")
             .GetResult();
 
         result.IsSuccessful.ShouldBeTrue(FormatFailingTypes(result));

@@ -1,4 +1,4 @@
-﻿using ECommerce.Infrastructure.Data.DbContexts;
+﻿using ECommerce.Infrastructure.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

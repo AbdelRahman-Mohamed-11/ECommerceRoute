@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ECommerce.Infrastructure.Data.Configurations;
+namespace ECommerce.Infrastructure.Persistence.Configurations;
 
 public sealed class ProductTypeConfiguration
 : IEntityTypeConfiguration<ProductType>
@@ -10,6 +10,8 @@ public sealed class ProductTypeConfiguration
     public void Configure(
         EntityTypeBuilder<ProductType> builder)
     {
+        BaseEntityConfiguration.Configure(builder);
+
         builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(200);
