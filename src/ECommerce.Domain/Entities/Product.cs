@@ -10,9 +10,9 @@ public class Product : BaseEntity
 
     public decimal Price { get; private set; }
 
-    public Guid ProductBrandId { get; set; }
+    public Guid ProductBrandId { get; private set; }
     public ProductBrand ProductBrand { get; private set; } = null!;
 
-    public Guid ProductTypeId { get; set; }
+    public Guid ProductTypeId { get; private set; }
     public ProductType ProductType { get; private set; } = null!;
 }
