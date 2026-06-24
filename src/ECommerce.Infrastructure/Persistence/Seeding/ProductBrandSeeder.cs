@@ -10,5 +10,5 @@ public class ProductBrandSeeder(StoreDbContext dbContext) : IDataSeeder
 
     public async Task SeedAsync(CancellationToken ct = default)
             => await JsonSeeder.SeedIfEmpty<ProductBrand, ProductBrandSeedModel>
-                (dbContext.Brands, "brands.json", b => ProductBrand.Create(b.Id, b.Name), ct);
+                (dbContext.Brands, "brands.json", b => ProductBrand.Create(b.Id, b.Name).Value, ct);
 }

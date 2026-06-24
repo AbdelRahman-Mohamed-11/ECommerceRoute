@@ -1,4 +1,7 @@
-﻿namespace ECommerce.Domain.Entities;
+﻿using ECommerce.Domain.Errors;
+using ECommerce.Domain.Shared;
+
+namespace ECommerce.Domain.Entities;
 
 public class ProductBrand : BaseEntity
 {
@@ -6,17 +9,24 @@ public class ProductBrand : BaseEntity
 
     public ICollection<Product> Products { get; private set; } = [];
 
-
-    private ProductBrand() { }
-
-
-    public static ProductBrand Create(Guid id, string name)
+    private ProductBrand()
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+    }
 
+    public static Result<ProductBrand> Create(Guid id, string name)
+    {
         if (id == Guid.Empty)
-            throw new ArgumentException("Brand is is required", nameof(id));
+            return Result<ProductBrand>.Failure(ProductBrandErrors.InvalidId);
 
-        return new() { Id = id, Name = name.Trim()};
+        if (string.IsNullOrWhiteSpace(name))
+            return Result<ProductBrand>.Failure(ProductBrandErrors.InvalidName);
+
+        var productBrand = new ProductBrand
+        {
+            Id = id,
+            Name = name.Trim()
+        };
+
+        return Result<ProductBrand>.Success(productBrand);
     }
 }
