@@ -12,6 +12,4 @@ public abstract class BaseEntity
         IsDeleted = true;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
-
-    // todo: CreateById   UpdatedById
 }
