@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
@@ -6,7 +6,10 @@ using System.Collections.Concurrent;
 
 namespace ECommerce.Infrastructure.Repositories;
 
-public class UnitOfWork(StoreDbContext dbContext, IAuditInterceptor auditInterceptor) : IUnitOfWork
+public class UnitOfWork(
+    StoreDbContext dbContext,
+    IAuditInterceptor auditInterceptor,
+    ISoftDeleteInterceptor softDeleteInterceptor) : IUnitOfWork
 {
     private readonly ConcurrentDictionary<Type, object> _repos = new();
 
@@ -27,6 +30,7 @@ public class UnitOfWork(StoreDbContext dbContext, IAuditInterceptor auditInterce
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
         auditInterceptor.Apply(dbContext);
+        softDeleteInterceptor.Apply(dbContext);
         return await dbContext.SaveChangesAsync(ct);
     }
 }

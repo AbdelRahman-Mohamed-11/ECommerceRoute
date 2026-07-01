@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,16 +11,16 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         BaseEntityConfiguration.Configure(builder);
 
         builder.Property(x => x.Name)
-          .IsRequired()
-          .HasMaxLength(200);
+            .IsRequired()
+            .HasMaxLength(Product.MaxNameLength);
 
         builder.Property(x => x.Description)
             .IsRequired()
-            .HasMaxLength(2000);
+            .HasMaxLength(Product.MaxDescriptionLength);
 
         builder.Property(x => x.PictureUrl)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasMaxLength(Product.MaxPictureUrlLength);
 
         builder.Property(x => x.Price)
             .HasPrecision(18, 2);

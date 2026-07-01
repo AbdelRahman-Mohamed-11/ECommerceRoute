@@ -23,9 +23,17 @@ public sealed class Result<TValue> : Result
     public static Result<TValue> Success(TValue value) =>
         new(value, true, Error.None, SuccessType.Ok);
 
-    public static Result<TValue> Created(TValue value) =>
-        new(value, true, Error.None, SuccessType.Created);
-
     public static new Result<TValue> Failure(Error error) =>
         new(default, false, error, SuccessType.Ok);
+
+    public TResult Match<TResult>(
+        Func<TValue, TResult> onSuccess,
+        Func<Error, TResult> onFailure)
+    {
+        return IsSuccess ? onSuccess(_value!)
+            : onFailure(Error);
+    }
+
+    public static implicit operator Result<TValue>(TValue value) =>
+        Success(value);
 }
