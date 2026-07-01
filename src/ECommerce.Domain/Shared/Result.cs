@@ -27,13 +27,6 @@ public class Result
 
     public static Result Success() =>
         new(true, Error.None, SuccessType.Ok);
-
-    public static Result Created() =>
-        new(true, Error.None, SuccessType.Created);
-
-    public static Result NoContent() =>
-        new(true, Error.None, SuccessType.NoContent);
-
     public static Result Failure(Error error) =>
         new(false, error, SuccessType.Ok);
 }

@@ -6,15 +6,15 @@ namespace ECommerce.UseCases.Products.Queries;
 
 public sealed class GetByIdProductQuery(IProductQueryService productQueryService)
 {
-    public async Task<Result<GetByIdProductResponse>> ExecuteAsync(Guid id)
+    public async Task<Result<GetByIdProductResponse>> ExecuteAsync(Guid id , CancellationToken ct = default)
     {
-        var product = await productQueryService.GetByIdProductAsync(id);
+        var product = await productQueryService.GetByIdProductAsync(id, ct);
         
         if (product == null)
         {
             return Result<GetByIdProductResponse>.Failure(ProductErrors.NotFound);
         }
 
-        return Result<GetByIdProductResponse>.Success(product);
+        return product;
     }
 }

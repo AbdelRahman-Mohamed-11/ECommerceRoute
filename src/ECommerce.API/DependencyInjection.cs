@@ -11,6 +11,8 @@ public static class DependencyInjection
 
         services.AddControllers();
 
+        services.AddSwaggerGen(); // generate openapi file
+
         return services;
     }
 }
