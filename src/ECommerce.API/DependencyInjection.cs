@@ -1,4 +1,5 @@
-﻿using ECommerce.API.Exceptions;
+﻿using System.Reflection;
+using ECommerce.API.Exceptions;
 
 namespace ECommerce.API;
 
@@ -11,7 +12,12 @@ public static class DependencyInjection
 
         services.AddControllers();
 
-        services.AddSwaggerGen(); // generate openapi file
+        services.AddSwaggerGen(options =>
+        {
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            options.IncludeXmlComments(xmlPath);
+        });
 
         return services;
     }
