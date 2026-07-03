@@ -13,6 +13,9 @@ public class BrandsController(GetAllBrandsQuery getAllBrandsQuery) : ApiControll
     {
         var result = await getAllBrandsQuery.ExecuteAsync(ct);
 
-        return FromResult(result);
+        if (result.IsFailure)
+            return Problem(result);
+
+        return Ok(ApiResponse<IReadOnlyList<GetAllBrandsResponse>>.Ok(result.Value, HttpContext.TraceIdentifier));
     }
 }

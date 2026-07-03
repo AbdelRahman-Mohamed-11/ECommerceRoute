@@ -13,6 +13,9 @@ public class TypesController(GetAllTypesQuery getAllTypesQuery) : ApiControllerB
     {
         var result = await getAllTypesQuery.ExecuteAsync(ct);
 
-        return FromResult(result);
+        if (result.IsFailure)
+            return Problem(result);
+
+        return Ok(ApiResponse<IReadOnlyList<GetAllTypesResponse>>.Ok(result.Value, HttpContext.TraceIdentifier));
     }
 }

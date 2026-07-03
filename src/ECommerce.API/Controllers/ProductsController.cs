@@ -16,7 +16,10 @@ public class ProductsController(
     {
         var result = await getAllProductsQuery.ExecuteAsync(ct);
 
-        return FromResult(result);
+        if (result.IsFailure)
+            return Problem(result);
+
+        return Ok(ApiResponse<IReadOnlyList<GetAllProductsResponse>>.Ok(result.Value, HttpContext.TraceIdentifier));
     }
 
     /// <summary>
@@ -36,6 +39,9 @@ public class ProductsController(
     {
         var result = await getByIdProductQuery.ExecuteAsync(id, ct);
 
-        return FromResult(result);
+        if (result.IsFailure)
+            return Problem(result);
+
+        return Ok(ApiResponse<GetByIdProductResponse>.Ok(result.Value, HttpContext.TraceIdentifier));
     }
 }

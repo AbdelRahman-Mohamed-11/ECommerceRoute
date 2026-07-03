@@ -1,5 +1,4 @@
-﻿using ECommerce.API.Models;
-using ECommerce.Domain.Shared;
+﻿using ECommerce.Domain.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
@@ -8,21 +7,6 @@ namespace ECommerce.API.Controllers;
 [Route("api/[controller]")]
 public class ApiControllerBase : ControllerBase
 {
-    protected ActionResult<ApiResponse<T>> Success<T>(T data,
-        string? message = null, PaginationMeta? paginationMeta = null)
-    {
-        return Ok(ApiResponse<T>.Ok(data, HttpContext.TraceIdentifier, message, paginationMeta));
-    }
-
-
-    protected ActionResult<ApiResponse<T>> FromResult<T>(Result<T> result, string? message = null, 
-        PaginationMeta? pagination = null)
-    {
-        return result.IsFailure
-            ? Problem(result)
-            : Success(result.Value, message, pagination);
-    }
-
     protected ActionResult Problem(Result result)
     {
         var statusCode = result.Error.Type switch
@@ -72,5 +56,4 @@ public class ApiControllerBase : ControllerBase
             StatusCode = statusCode
         };
     }
-
 }
