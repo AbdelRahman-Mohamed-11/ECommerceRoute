@@ -1,10 +1,12 @@
 ﻿using ECommerce.Domain.Shared;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class ApiControllerBase : ControllerBase
 {
     protected ActionResult Problem(Result result)

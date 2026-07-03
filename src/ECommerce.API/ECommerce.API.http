@@ -1,4 +1,4 @@
-@host = http://localhost:5167/api
+@host = http://localhost:5167/api/v1
 @productId = 77777777-7777-7777-7777-777777777777
 GET {{host}}/products
 Accept: application/json

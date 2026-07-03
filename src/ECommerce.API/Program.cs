@@ -1,5 +1,4 @@
 using ECommerce.API;
-using ECommerce.API.Endpoints;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -20,14 +19,17 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(); // runs middlware make documentation file aviable to use
-
-    app.UseSwaggerUI();
-}
-
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
+
+    app.UseSwaggerUI(options =>
+    {
+        foreach (var description in app.DescribeApiVersions())
+        {
+            options.SwaggerEndpoint(
+                $"/swagger/{description.GroupName}/swagger.json",
+                description.GroupName.ToUpperInvariant());
+        }
+    });
 
     await using var scope = app.Services.CreateAsyncScope();
 
@@ -38,8 +40,6 @@ if (app.Environment.IsDevelopment())
 
     await dbSeed.SeedAll();
 }
-
-//app.MapProductEndpoints();
 
 app.MapControllers();
 
