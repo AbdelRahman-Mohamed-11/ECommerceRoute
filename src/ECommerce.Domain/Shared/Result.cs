@@ -2,7 +2,7 @@ namespace ECommerce.Domain.Shared;
 
 public class Result
 {
-    protected Result(bool isSuccess, Error error, SuccessType successType)
+    protected Result(bool isSuccess, Error error)
     {
         if (isSuccess && error != Error.None)
             throw new InvalidOperationException(
@@ -14,7 +14,6 @@ public class Result
 
         IsSuccess = isSuccess;
         Error = error;
-        SuccessType = successType;
     }
 
     public bool IsSuccess { get; }
@@ -23,10 +22,8 @@ public class Result
 
     public Error Error { get; }
 
-    public SuccessType SuccessType { get; }
-
     public static Result Success() =>
-        new(true, Error.None, SuccessType.Ok);
+        new(true, Error.None);
     public static Result Failure(Error error) =>
-        new(false, error, SuccessType.Ok);
+        new(false, error);
 }

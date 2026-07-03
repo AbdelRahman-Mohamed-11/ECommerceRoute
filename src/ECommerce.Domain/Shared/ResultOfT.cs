@@ -7,9 +7,8 @@ public sealed class Result<TValue> : Result
     private Result(
         TValue? value,
         bool isSuccess,
-        Error error,
-        SuccessType successType)
-        : base(isSuccess, error, successType)
+        Error error)
+        : base(isSuccess, error)
     {
         _value = value;
     }
@@ -21,10 +20,10 @@ public sealed class Result<TValue> : Result
                 "Cannot access the value of a failed result.");
 
     public static Result<TValue> Success(TValue value) =>
-        new(value, true, Error.None, SuccessType.Ok);
+        new(value, true, Error.None);
 
     public static new Result<TValue> Failure(Error error) =>
-        new(default, false, error, SuccessType.Ok);
+        new(default, false, error);
 
     public TResult Match<TResult>(
         Func<TValue, TResult> onSuccess,

@@ -15,13 +15,4 @@ public static class ResultExtensions
             ErrorType.Failure => StatusCodes.Status500InternalServerError,
             _ => StatusCodes.Status500InternalServerError
         };
-
-    public static int ToStatusCode(this SuccessType successType) =>
-        successType switch
-        {
-            SuccessType.Ok => StatusCodes.Status200OK,
-            SuccessType.Created => StatusCodes.Status201Created,
-            SuccessType.NoContent => StatusCodes.Status204NoContent,
-            _ => StatusCodes.Status200OK
-        };
 }
