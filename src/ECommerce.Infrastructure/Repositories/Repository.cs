@@ -1,5 +1,6 @@
 ﻿using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
+using ECommerce.Domain.Specifications;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,4 +36,9 @@ public sealed class Repository<T>(StoreDbContext dbContext)
 
     public void Delete(T entity)
         => entity.MarkAsDeleted();
+
+    public Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> specification, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
 }
