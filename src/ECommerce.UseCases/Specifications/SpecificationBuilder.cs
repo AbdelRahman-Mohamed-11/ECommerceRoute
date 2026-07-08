@@ -1,4 +1,7 @@
 ﻿using ECommerce.Domain.Specifications;
+using ECommerce.UseCases.Specifications.Includes;
+using ECommerce.UseCases.Specifications.OrderInterfaces;
+using ECommerce.UseCases.Specifications.Orders;
 using System.Linq.Expressions;
 
 namespace ECommerce.UseCases.Specifications;
@@ -69,14 +72,14 @@ public class SpecificationBuilder<T> : ISpecificationBuilder<T>
     }
 }
 
-public sealed class SpecificationBuilder<T, TResult> : ISpecificationBuilder<T, TResult>
+public class SpecificationBuilder<T, TResult> : ISpecificationBuilder<T, TResult>
 {
-    private readonly Specification<T, TResult> _specification;
+    protected readonly Specification<T, TResult> Specification;
     private readonly SpecificationBuilder<T> _builder;
 
     internal SpecificationBuilder(Specification<T, TResult> specification)
     {
-        _specification = specification;
+        Specification = specification;
         _builder = new SpecificationBuilder<T>(specification);
     }
 
@@ -86,16 +89,16 @@ public sealed class SpecificationBuilder<T, TResult> : ISpecificationBuilder<T, 
         return this;
     }
 
-    public IOrderedSpecificationBuilder<T> OrderBy(Expression<Func<T, object?>> orderExpression)
+    public IOrderedSpecificationBuilder<T, TResult> OrderBy(Expression<Func<T, object?>> orderExpression)
     {
         _builder.OrderBy(orderExpression);
-        return new OrderedSpecificationBuilder<T>(_specification);
+        return new OrderedSpecificationBuilder<T, TResult>(Specification);
     }
 
-    public IOrderedSpecificationBuilder<T> OrderByDescending(Expression<Func<T, object?>> orderExpression)
+    public IOrderedSpecificationBuilder<T, TResult> OrderByDescending(Expression<Func<T, object?>> orderExpression)
     {
         _builder.OrderByDescending(orderExpression);
-        return new OrderedSpecificationBuilder<T>(_specification);
+        return new OrderedSpecificationBuilder<T, TResult>(Specification);
     }
 
     public ISpecificationBuilder<T, TResult> Skip(int skip)
@@ -120,71 +123,16 @@ public sealed class SpecificationBuilder<T, TResult> : ISpecificationBuilder<T, 
 
     public ISpecificationBuilder<T, TResult> Select(Expression<Func<T, TResult>> selector)
     {
-        _specification.SetSelector(selector);
+        Specification.SetSelector(selector);
         return this;
     }
 
     public ISpecificationBuilder<T, TResult> SelectMany(Expression<Func<T, IEnumerable<TResult>>> selector)
     {
-        _specification.SetSelectMany(selector);
+        Specification.SetSelectMany(selector);
         return this;
     }
 }
 
 
-public sealed class IncludableSpecificationBuilder<T, TProperty>
-    : SpecificationBuilder<T>, IIncludableSpecificationBuilder<T, TProperty>
-{
-    private readonly LambdaExpression _parent;
 
-    internal IncludableSpecificationBuilder(Specification<T> specification, LambdaExpression parent)
-        : base(specification)
-    {
-        _parent = parent;
-    }
-    public IIncludableSpecificationBuilder<T, TNext> ThenInclude<TNext>(Expression<Func<TProperty, TNext>> navigation)
-    {
-        Specification.AddThenInclude(navigation, _parent);
-        return new IncludableSpecificationBuilder<T, TNext>(Specification, navigation);
-    }
-}
-
-public sealed class IncludableCollectionSpecificationBuilder<T, TElement>
-    : SpecificationBuilder<T>, IIncludableCollectionSpecificationBuilder<T, TElement>
-{
-    private readonly LambdaExpression _parent;
-
-    internal IncludableCollectionSpecificationBuilder(Specification<T> specification, LambdaExpression parent)
-        : base(specification)
-    {
-        _parent = parent;
-    }
-
-    public IIncludableSpecificationBuilder<T, TNext> ThenInclude<TNext>(Expression<Func<TElement, TNext>> navigation)
-    {
-        Specification.AddThenInclude(navigation, _parent);
-        return new IncludableSpecificationBuilder<T, TNext>(Specification, navigation);
-    }
-}
-
-
-public sealed class OrderedSpecificationBuilder<T> : SpecificationBuilder<T>,
-    IOrderedSpecificationBuilder<T>
-{
-    internal OrderedSpecificationBuilder(Specification<T> specification)
-        : base(specification)
-    {
-
-    }
-    public IOrderedSpecificationBuilder<T> ThenBy(Expression<Func<T, object?>> orderExpression)
-    {
-        Specification.AddOrder(new OrderExpressionInfo<T>(orderExpression, OrderType.ThenBy));
-        return this;
-    }
-
-    public IOrderedSpecificationBuilder<T> ThenByDescending(Expression<Func<T, object?>> orderExpression)
-    {
-        Specification.AddOrder(new OrderExpressionInfo<T>(orderExpression, OrderType.ThenByDescending));
-        return this;
-    }
-}
