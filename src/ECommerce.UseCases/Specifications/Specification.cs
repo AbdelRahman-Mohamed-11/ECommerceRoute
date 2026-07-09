@@ -23,7 +23,7 @@ public abstract class Specification<T> : ISpecification<T>
     internal void AddWhere(Expression<Func<T, bool>> predicate)
         => _whereExpressions.Add(predicate);
 
-
+    // include(o => o.Customer)
     internal Expression<Func<T, object>> AddInclude<TProperty>(Expression<Func<T, TProperty>> includeExpression)
     {
         // Expression<Func<T, TProperty>> TO Expression<Func<T, object>>

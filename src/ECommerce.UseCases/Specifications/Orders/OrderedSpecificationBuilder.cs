@@ -1,5 +1,4 @@
 ﻿using ECommerce.Domain.Specifications;
-using ECommerce.UseCases.Specifications.OrderInterfaces;
 using System.Linq.Expressions;
 
 namespace ECommerce.UseCases.Specifications.Orders;

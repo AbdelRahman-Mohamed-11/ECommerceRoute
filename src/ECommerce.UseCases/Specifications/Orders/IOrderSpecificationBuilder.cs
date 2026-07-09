@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace ECommerce.UseCases.Specifications.OrderInterfaces;
+namespace ECommerce.UseCases.Specifications.Orders;
 
 public interface IOrderedSpecificationBuilder<T> : ISpecificationBuilder<T>
 {

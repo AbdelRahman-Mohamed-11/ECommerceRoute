@@ -61,6 +61,12 @@ public static class SpecificationEvaluator
         return query;
     }
 
+    // apply includes and then includes
+
+    // include(o => o.Customer)
+       // thenInclude(c => c.Address)                           // include("Customer.Addreess")
+    // .include(o => o.items)
+    //  .theninclude(item => item.Product)
     private static IQueryable<T> ApplyIncludes<T>(
         IQueryable<T> query,
         ISpecification<T> specification)
@@ -69,13 +75,13 @@ public static class SpecificationEvaluator
         if (specification.Includes.Count == 0)
             return query;
 
-        var pathMap = new Dictionary<LambdaExpression, string>(ReferenceEqualityComparer.Instance);
+        var pathMap = new Dictionary<LambdaExpression, string>();
 
         foreach (var include in specification.Includes)
         {
-            var path = GetMemberPath(include.Body);
-            query = query.Include(path);
-            pathMap[include] = path;
+            var path = GetMemberPath(include.Body); // customer
+            query = query.Include(path); // query = query.include("customer")
+            pathMap[include] = path;  // key: o => o.Customer , value: customer
         }
 
         foreach (var includeInfo in specification.IncludeExpressions)
@@ -86,19 +92,17 @@ public static class SpecificationEvaluator
                     $"Could not find parent expression for ThenInclude: {includeInfo.LambdaExpression}");
             }
 
-            var path = $"{parentPath}.{GetMemberPath(includeInfo.LambdaExpression.Body)}";
-            query = query.Include(path);
+            var path = $"{parentPath}.{GetMemberPath(includeInfo.LambdaExpression.Body)}"; // Customer.Address
+            query = query.Include(path); // Customer.Address
             pathMap[includeInfo.LambdaExpression] = path;
         }
 
         return query;
     }
 
+    // o => o.Customer (body is MemberExpression)  , Member(Customer) .Name
     private static string GetMemberPath(Expression expression)
     {
-        if (expression is UnaryExpression { Operand: var operand })
-            expression = operand;
-
         if (expression is MemberExpression member)
             return member.Member.Name;
 

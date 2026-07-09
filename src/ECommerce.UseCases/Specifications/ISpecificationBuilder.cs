@@ -1,6 +1,6 @@
 ﻿using ECommerce.UseCases.Specifications;
 using ECommerce.UseCases.Specifications.Includes;
-using ECommerce.UseCases.Specifications.OrderInterfaces;
+using ECommerce.UseCases.Specifications.Orders;
 using System.Linq.Expressions;
 
 namespace ECommerce.UseCases.Specifications;
@@ -12,8 +12,15 @@ public interface ISpecificationBuilder<T>
     IOrderedSpecificationBuilder<T> OrderBy(Expression<Func<T, object?>> orderExpression);
     IOrderedSpecificationBuilder<T> OrderByDescending(Expression<Func<T, object?>> orderExpression);
 
+    // Include (o => o.Customer)
+     //   .thenInclude(c => c.Address)
+    
 
     IIncludableSpecificationBuilder<T, TProperty> Include<TProperty>(Expression<Func<T, TProperty>> navigation);
+
+
+    // Include (o => o.Items)
+    // .ThenInclude(item => item.Product)
     IIncludableCollectionSpecificationBuilder<T, TElement> Include<TElement>(Expression<Func<T, ICollection<TElement>>> navigation);
 
     ISpecificationBuilder<T> Skip(int skip);

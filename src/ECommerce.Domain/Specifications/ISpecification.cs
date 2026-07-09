@@ -8,6 +8,7 @@ public interface ISpecification<T>
 
     IReadOnlyList<Expression<Func<T, object>>> Includes { get; }
 
+    // thenInclude
     IReadOnlyList<IncludeExpressionInfo> IncludeExpressions { get; }
 
     IReadOnlyList<OrderExpressionInfo<T>> OrderExpressions { get; }
