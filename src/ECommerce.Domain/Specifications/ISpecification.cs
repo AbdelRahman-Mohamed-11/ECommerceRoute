@@ -12,7 +12,7 @@ public interface ISpecification<T>
     //   e.g. p => p.ProductBrand, p => p.ProductType
     IReadOnlyList<Expression<Func<T, object>>> Includes { get; }
 
-    // ThenInclude chains — each entry extends a root Include (see IncludeExpressionInfo)
+    // thenInclude
     IReadOnlyList<IncludeExpressionInfo> IncludeExpressions { get; }
 
     // Sort rules in apply order (OrderBy, ThenBy, …)
@@ -21,14 +21,16 @@ public interface ISpecification<T>
     // Pagination — Skip/Take applied after filters and ordering
     int? Skip { get; }
     int? Take { get; }
-    bool IsPagingEnabled { get; }  // true when Skip or Take is set
+    bool IsPagingEnabled { get; }
 
     // false = AsNoTracking(), true = AsTracking()
     bool IsTrackingEnabled { get; }
 }
+// select(p => new {})
 
-public interface ISpecification<T, TResult> : ISpecification<T>
+public interface ISpecification<T, TResult> : ISpecification<T> 
 {
-    Expression<Func<T, TResult>>? Selector { get; }
-    Expression<Func<T, IEnumerable<TResult>>>? SelectorMany { get; }
+   Expression<Func<T, TResult>>? Selector { get; }
+
+   Expression<Func<T, IEnumerable<TResult>>>? SelectorMany { get; }
 }

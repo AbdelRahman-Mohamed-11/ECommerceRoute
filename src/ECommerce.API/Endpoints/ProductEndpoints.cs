@@ -1,4 +1,4 @@
-using ECommerce.UseCases.Products;
+using ECommerce.UseCases.Products.Queries;
 
 namespace ECommerce.API.Endpoints;
 
@@ -8,12 +8,15 @@ public static class ProductEndpoints
     {
         var group = endpoints.MapGroup("/api/products").WithTags("Products");
 
-        group.MapGet("/", async (IProductQueryService productQueryService, CancellationToken cancellationToken) =>
+        group.MapGet("/", async (GetAllProductsQuery getAllProductsQuery, CancellationToken cancellationToken) =>
         {
-            var products = await productQueryService.GetAllProductsAsync(cancellationToken);
-            return Results.Ok(products); // 200
+            var result = await getAllProductsQuery.ExecuteAsync(cancellationToken);
+
+            return result.IsFailure
+                ? Results.Problem(result.Error.Message)
+                : Results.Ok(result.Value);
         });
-        
+
         return endpoints;
     }
 }
