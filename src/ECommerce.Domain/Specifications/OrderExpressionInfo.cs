@@ -3,10 +3,9 @@
 namespace ECommerce.Domain.Specifications;
 
 // orderby(p => p.Price)
-public record OrderExpressionInfo<T>(
+public sealed record OrderExpressionInfo<T>(
     Expression<Func<T, object?>> KeySelector,
     OrderType OrderType);
-
 
 public enum OrderType
 {
@@ -15,7 +14,3 @@ public enum OrderType
     ThenBy,
     ThenByDescending,
 }
-
-public sealed record OrderExpressionInfo<T>(
-    Expression<Func<T, object?>> KeySelector,
-    OrderType OrderType);

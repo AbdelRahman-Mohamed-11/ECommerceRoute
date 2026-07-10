@@ -12,6 +12,12 @@ public sealed class Repository<T>(StoreDbContext dbContext)
 {
     private readonly DbSet<T> _dbSet = dbContext.Set<T>();
 
+    public async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => await _dbSet.FindAsync([id], ct);
+
+    public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default)
+        => await _dbSet.AsNoTracking().ToListAsync(ct);
+
     public async Task<T?> FirstOrDefaultAsync(ISpecification<T> specification, CancellationToken ct = default)
     {
         return await SpecificationEvaluator.GetQuery(_dbSet, specification).FirstOrDefaultAsync(ct);

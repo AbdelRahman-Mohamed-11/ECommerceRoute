@@ -2,7 +2,6 @@
 using ECommerce.UseCases.Specifications.Includes;
 using ECommerce.UseCases.Specifications.Orders;
 using System.Linq.Expressions;
-using ECommerce.Domain.Specifications;
 
 namespace ECommerce.UseCases.Specifications;
 
@@ -73,12 +72,6 @@ public class SpecificationBuilder<T> : ISpecificationBuilder<T>
         Specification.SetTracking();
         return this;
     }
-
-    public IOrderedSpecificationBuilder<T> ThenByDescending(Expression<Func<T, object?>> orderExpression)
-    {
-        Specification.AddOrder(new OrderExpressionInfo<T>(orderExpression, OrderType.ThenByDescending));
-        return this;
-}
 }
 
 public class SpecificationBuilder<T, TResult> : ISpecificationBuilder<T, TResult>

@@ -30,16 +30,6 @@ public interface ISpecificationBuilder<T>
     ISpecificationBuilder<T> AsTracking();
 }
 
-public interface IIncludableSpecificationBuilder<T, TProperty> : ISpecificationBuilder<T>
-{
-    IIncludableSpecificationBuilder<T, TNext> ThenInclude<TNext>(Expression<Func<TProperty, TNext>> navigation);
-}
-
-public interface IIncludableCollectionSpecificationBuilder<T, TElement> : ISpecificationBuilder<T>
-{
-    IIncludableSpecificationBuilder<T, TNext> ThenInclude<TNext>(Expression<Func<TElement, TNext>> navigation);
-}
-
 public interface ISpecificationBuilder<T, TResult>
 {
     ISpecificationBuilder<T, TResult> Where(Expression<Func<T, bool>> predicate);
@@ -55,10 +45,4 @@ public interface ISpecificationBuilder<T, TResult>
 
     ISpecificationBuilder<T, TResult> Select(Expression<Func<T, TResult>> selector);
     ISpecificationBuilder<T, TResult> SelectMany(Expression<Func<T, IEnumerable<TResult>>> selector);
-}
-
-public interface IOrderedSpecificationBuilder<T> : ISpecificationBuilder<T>
-{
-    IOrderedSpecificationBuilder<T> ThenBy(Expression<Func<T, object?>> orderExpression);
-    IOrderedSpecificationBuilder<T> ThenByDescending(Expression<Func<T, object?>> orderExpression);
 }

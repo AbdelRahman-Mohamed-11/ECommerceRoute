@@ -1,6 +1,5 @@
 ﻿using ECommerce.Domain.Specifications;
 using System.Linq.Expressions;
-using ECommerce.Domain.Specifications;
 
 namespace ECommerce.UseCases.Specifications;
 
@@ -61,13 +60,6 @@ public abstract class Specification<T> : ISpecification<T>
         => IsTrackingEnabled = true;
 
     internal void SetNoTracking() => IsTrackingEnabled = false;
-
-    public int? Skip { get; private set; }
-    public int? Take { get; private set; }
-    public bool IsPagingEnabled => Skip.HasValue || Take.HasValue;
-
-
-    public bool IsTrackingEnabled { get; private set; }
 }
 
 
