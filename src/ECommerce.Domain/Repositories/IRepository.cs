@@ -2,7 +2,8 @@
 
 namespace ECommerce.Domain.Repositories;
 
-public interface IRepository<T> where T : BaseEntity
+// IRepository<T> — Domain write port; extends read repository with Add / Update / Delete.
+public interface IRepository<T> : IReadRepository<T> where T : BaseEntity
 {
     Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default);
 

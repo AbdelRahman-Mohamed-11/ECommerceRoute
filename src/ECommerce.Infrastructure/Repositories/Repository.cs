@@ -1,6 +1,8 @@
 ﻿using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
+using ECommerce.Domain.Specifications;
 using ECommerce.Infrastructure.Persistence.DbContexts;
+using ECommerce.Infrastructure.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repositories;
@@ -10,29 +12,55 @@ public sealed class Repository<T>(StoreDbContext dbContext)
 {
     private readonly DbSet<T> _dbSet = dbContext.Set<T>();
 
-    public async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<T?> FirstOrDefaultAsync(ISpecification<T> specification, CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification).FirstOrDefaultAsync(ct);
+
+    public async Task<TResult?> FirstOrDefaultAsync<TResult>(
+        ISpecification<T, TResult> specification,
+        CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification).FirstOrDefaultAsync(ct);
+
+    public async Task<T> SingleAsync(ISpecification<T> specification, CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification).SingleAsync(ct);
+
+    public async Task<TResult> SingleAsync<TResult>(
+        ISpecification<T, TResult> specification,
+        CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification).SingleAsync(ct);
+
+    public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> specification, CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<TResult>> ListAsync<TResult>(
+        ISpecification<T, TResult> specification,
+        CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification).ToListAsync(ct);
+
+    public async Task<int> CountAsync(ISpecification<T> specification, CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification, ignorePaging: true).CountAsync(ct);
+
+    public async Task<bool> AnyAsync(ISpecification<T> specification, CancellationToken ct = default) =>
+        await _dbSet.WithSpecification(specification, ignorePaging: true).AnyAsync(ct);
+
+    public async Task<PagedResult<T>> PagedListAsync(
+        ISpecification<T> specification,
+        CancellationToken ct = default)
     {
-        return await _dbSet
-            .FirstOrDefaultAsync(entity => entity.Id == id, ct);
+        var totalCount = await CountAsync(specification, ct);
+        var items = await ListAsync(specification, ct);
+
+        return new PagedResult<T>(items, totalCount);
     }
 
-    public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default)
-    {
-        return await _dbSet
-            .AsNoTracking()
-            .ToListAsync(ct);
-    }
+    public async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+        await _dbSet.FirstOrDefaultAsync(entity => entity.Id == id, ct);
 
-    public void Add(T entity)
-    {
-        _dbSet.Add(entity);
-    }
+    public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default) =>
+        await _dbSet.AsNoTracking().ToListAsync(ct);
 
-    public void Update(T entity)
-    {
-        _dbSet.Update(entity);
-    }
+    public void Add(T entity) => _dbSet.Add(entity);
 
-    public void Delete(T entity)
-        => entity.MarkAsDeleted();
+    public void Update(T entity) => _dbSet.Update(entity);
+
+    public void Delete(T entity) => entity.MarkAsDeleted();
 }
