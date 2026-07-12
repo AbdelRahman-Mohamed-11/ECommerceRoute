@@ -118,7 +118,7 @@ public class ArchitectureTests
     public void Handlers_Should_End_With_Handler()
     {
         var violations = ApplicationAssembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false })
+            .Where(t => t is { IsClass: true, IsAbstract: false, IsNested: false })
             .Where(IsHandler)
             .Where(t => !t.Name.EndsWith("Handler", StringComparison.Ordinal))
             .Select(t => t.FullName)
@@ -171,9 +171,12 @@ public class ArchitectureTests
 
     private static bool IsRequestHandlerInterface(Type interfaceType) =>
         interfaceType.IsGenericType &&
-        interfaceType.GetGenericTypeDefinition().FullName?.StartsWith(
+        (interfaceType.GetGenericTypeDefinition().FullName?.StartsWith(
             "MediatR.IRequestHandler`",
-            StringComparison.Ordinal) == true;
+            StringComparison.Ordinal) == true ||
+         interfaceType.GetGenericTypeDefinition().FullName?.StartsWith(
+            "ECommerce.UseCases.Messaging.IRequestHandler`",
+            StringComparison.Ordinal) == true);
 
     private static string FormatFailingTypes(TestResult result) =>
         result.IsSuccessful

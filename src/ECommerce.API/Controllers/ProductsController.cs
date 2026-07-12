@@ -1,20 +1,18 @@
 ﻿using ECommerce.API.Models;
+using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 
-// CQRS, Mediator
-public class ProductsController(
-        GetAllProductsQuery getAllProductsQuery,
-        GetByIdProductQuery getByIdProductQuery) : ApiControllerBase
+public class ProductsController(ISender sender) : ApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<GetAllProductsResponse>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<GetAllProductsResponse>>>> GetAll(CancellationToken ct = default)
     {
-        var result = await getAllProductsQuery.ExecuteAsync(ct);
+        var result = await sender.Send(new GetAllProductsQuery(), ct);
 
         if (result.IsFailure)
             return Problem(result);
@@ -32,12 +30,12 @@ public class ProductsController(
     /// </returns>
     /// <response code="200">Product was found successfully.</response>
     /// <response code="404">Product was not found.</response>
-    [HttpGet("{id:guid}")] // Get API/Products/{id}
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<GetByIdProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<GetByIdProductResponse>>> GetById(Guid id, CancellationToken ct = default)
     {
-        var result = await getByIdProductQuery.ExecuteAsync(id, ct);
+        var result = await sender.Send(new GetByIdProductQuery(id), ct);
 
         if (result.IsFailure)
             return Problem(result);
