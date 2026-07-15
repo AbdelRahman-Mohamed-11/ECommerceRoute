@@ -12,12 +12,22 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
+    // serliog + seq
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext());
+
+    builder.Services.AddOutputCache(options =>
+    {
+        options.AddPolicy("Products", policy =>
+        {
+            policy.Expire(TimeSpan.FromMinutes(1))
+            .SetVaryByQuery("pagesize", "pageNumber");
+        });
+    });
 
     builder.Services.AddPresentation();
 
@@ -30,6 +40,8 @@ try
     app.UseSerilogRequestLogging();
 
     app.UseExceptionHandler();
+
+    app.UseOutputCache();
 
     if (app.Environment.IsDevelopment())
     {
