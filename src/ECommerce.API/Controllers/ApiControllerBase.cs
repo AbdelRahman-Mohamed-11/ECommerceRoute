@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using ECommerce.API.Models;
+using ECommerce.Domain.Repositories;
 using ECommerce.Domain.Shared;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,16 @@ public class ApiControllerBase : ControllerBase
        result.IsFailure
            ? Problem(result)
            : Success(result.Value, successMessage, pagination);
+
+
+    protected ActionResult<ApiResponse<IReadOnlyList<T>>> FromPagedResult<T>(
+            Result<PagedResult<T>> result,
+            int pageNumber,
+            int pageSize,
+            string sucessMessage)
+        => result.IsFailure ?
+           Problem(result)
+        : Success(result.Value.Items, sucessMessage, new PaginationMeta(pageNumber, pageSize, result.Value.TotalCount));
 
     protected ActionResult Problem(Result result)
     {

@@ -8,16 +8,18 @@ namespace ECommerce.API.Controllers;
 
 public class ProductsController(ISender sender) : ApiControllerBase
 {
-    [HttpGet]
+    [HttpGet("paged")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<GetAllProductsResponse>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<GetAllProductsResponse>>>> GetAll(CancellationToken ct = default)
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<GetAllProductsResponse>>>> Paged(
+       [FromQuery] GetPagedProductsQuery query,
+        CancellationToken ct = default)
     {
-        var result = await sender.Send(new GetAllProductsQuery(), ct);
+        var result = await sender.Send(query, ct);
 
         if (result.IsFailure)
             return Problem(result);
 
-        return Ok(ApiResponse<IReadOnlyList<GetAllProductsResponse>>.Ok(result.Value, HttpContext.TraceIdentifier));
+        return FromPagedResult(result, query.PageNumber, query.PageSize, "Paged products retrieved succefully");
     }
 
     /// <summary>
@@ -35,6 +37,7 @@ public class ProductsController(ISender sender) : ApiControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<GetByIdProductResponse>>> GetById(Guid id, CancellationToken ct = default)
     {
+        // MEDIR
         var result = await sender.Send(new GetByIdProductQuery(id), ct);
 
         if (result.IsFailure)
