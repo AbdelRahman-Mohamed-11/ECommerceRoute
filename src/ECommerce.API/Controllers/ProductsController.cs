@@ -3,11 +3,13 @@ using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Queries;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace ECommerce.API.Controllers;
 
 public class ProductsController(ISender sender) : ApiControllerBase
 {
+    [OutputCache(Duration = 20, Tags = ["Products"])]
     [HttpGet("paged")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<GetAllProductsResponse>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<GetAllProductsResponse>>>> Paged(
