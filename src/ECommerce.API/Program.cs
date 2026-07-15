@@ -4,43 +4,66 @@ using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.UseCases;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-builder.Services.AddPresentation();
-
-builder.Services.AddInfrastructure(builder.Configuration);
-
-builder.Services.AddApplication();
-
-var app = builder.Build();
-
-app.UseExceptionHandler();
-
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger();
+    var builder = WebApplication.CreateBuilder(args);
 
-    app.UseSwaggerUI(options =>
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext());
+
+    builder.Services.AddPresentation();
+
+    builder.Services.AddInfrastructure(builder.Configuration);
+
+    builder.Services.AddApplication();
+
+    var app = builder.Build();
+
+    app.UseSerilogRequestLogging();
+
+    app.UseExceptionHandler();
+
+    if (app.Environment.IsDevelopment())
     {
-        foreach (var description in app.DescribeApiVersions())
+        app.UseSwagger();
+
+        app.UseSwaggerUI(options =>
         {
-            options.SwaggerEndpoint(
-                $"/swagger/{description.GroupName}/swagger.json",
-                description.GroupName.ToUpperInvariant());
-        }
-    });
+            foreach (var description in app.DescribeApiVersions())
+            {
+                options.SwaggerEndpoint(
+                    $"/swagger/{description.GroupName}/swagger.json",
+                    description.GroupName.ToUpperInvariant());
+            }
+        });
 
-    await using var scope = app.Services.CreateAsyncScope();
+        await using var scope = app.Services.CreateAsyncScope();
 
-    var dbSeed = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
-    var dbContext = scope.ServiceProvider.GetRequiredService<StoreDbContext>();
+        var dbSeed = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StoreDbContext>();
 
-    await dbContext.Database.MigrateAsync();
+        await dbContext.Database.MigrateAsync();
 
-    await dbSeed.SeedAll();
+        await dbSeed.SeedAll();
+    }
+
+    app.MapControllers();
+
+    await app.RunAsync();
 }
-
-app.MapControllers();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    await Log.CloseAndFlushAsync();
+}
