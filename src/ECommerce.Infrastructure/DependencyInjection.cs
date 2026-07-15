@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Repositories;
+using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -34,14 +34,15 @@ public static class DependencyInjection
 
         services.AddScoped<DatabaseSeeder>();
 
+        var cloudinarySection = config.GetSection("CloudinarySettings");
         services.Configure<CloudinarySettings>(options =>
         {
-            options.CloudName = config["CloudinarySettings:CloudName"]!;
-            options.ApiKey = config["CloudinarySettings:ApiKey"]!;
-            options.ApiSecret = config["CloudinarySettings:ApiSecret"]!;
+            options.CloudName = cloudinarySection["CloudName"]!;
+            options.ApiKey = cloudinarySection["ApiKey"]!;
+            options.ApiSecret = cloudinarySection["ApiSecret"]!;
         });
 
-        services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IAttachmentService, AttachmentService>();
 
         return services;
     }
