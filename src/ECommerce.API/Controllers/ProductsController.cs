@@ -45,4 +45,25 @@ public class ProductsController(ISender sender) : ApiControllerBase
 
         return Ok(ApiResponse<GetByIdProductResponse>.Ok(result.Value, HttpContext.TraceIdentifier));
     }
+
+
+
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<Guid>>> Create(
+        [FromForm] CreateProductCommand command,
+        CancellationToken ct = default)
+    {
+        var result = await sender.Send(command, ct);
+
+        if (result.IsFailure)
+            return Problem(result);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = result.Value },
+            ApiResponse<Guid>.Ok(result.Value, HttpContext.TraceIdentifier));
+    }
 }

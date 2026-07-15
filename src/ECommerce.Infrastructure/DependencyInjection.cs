@@ -3,6 +3,9 @@ using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.Infrastructure.Repositories;
+using ECommerce.Infrastructure.Services;
+using ECommerce.UseCases.Common.Interfaces;
+using ECommerce.UseCases.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +33,15 @@ public static class DependencyInjection
         services.AddScoped<IDataSeeder, ProductTypeSeeder>();
 
         services.AddScoped<DatabaseSeeder>();
+
+        services.Configure<CloudinarySettings>(options =>
+        {
+            options.CloudName = config["CloudinarySettings:CloudName"]!;
+            options.ApiKey = config["CloudinarySettings:ApiKey"]!;
+            options.ApiSecret = config["CloudinarySettings:ApiSecret"]!;
+        });
+
+        services.AddScoped<IPhotoService, PhotoService>();
 
         return services;
     }
