@@ -1,5 +1,6 @@
 ﻿using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Caching;
+using ECommerce.Infrastructure.Extensions;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -34,6 +35,8 @@ public static class DependencyInjection
         services.AddScoped<DatabaseSeeder>();
 
         AddBasketCaching(services, config);
+
+        services.AddHealthCheckServices(config);
 
         return services;
     }

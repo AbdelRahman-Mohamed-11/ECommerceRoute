@@ -1,4 +1,5 @@
 using ECommerce.API;
+using ECommerce.API.Endpoints;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -68,6 +69,8 @@ try
     }
 
     app.MapControllers();
+
+    app.MapHealthCheckEndpoints();
 
     await app.RunAsync();
 }
