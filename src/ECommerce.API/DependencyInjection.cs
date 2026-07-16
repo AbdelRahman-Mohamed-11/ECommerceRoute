@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Asp.Versioning;
 using ECommerce.API.Exceptions;
+using ECommerce.API.Filters;
 using ECommerce.API.OpenApi;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -14,7 +15,10 @@ public static class DependencyInjection
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        services.AddControllers();
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<AuditActionFilter>();
+        });
 
         services.AddApiVersioning(options =>
         {

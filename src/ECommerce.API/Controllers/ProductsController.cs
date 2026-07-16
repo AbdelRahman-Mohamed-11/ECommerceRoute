@@ -1,4 +1,5 @@
-﻿using ECommerce.API.Models;
+﻿using ECommerce.API.Filters;
+using ECommerce.API.Models;
 using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Queries;
