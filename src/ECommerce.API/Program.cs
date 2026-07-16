@@ -3,7 +3,9 @@ using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.UseCases;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Prometheus;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -12,7 +14,6 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    // serliog + seq
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -36,6 +37,10 @@ try
     builder.Services.AddApplication();
 
     var app = builder.Build();
+
+    app.UseMetricServer("/metrics");
+
+    app.UseHttpMetrics();
 
     app.UseSerilogRequestLogging();
 
@@ -68,6 +73,16 @@ try
     }
 
     app.MapControllers();
+
+    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+        Predicate = _ => false
+    });
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("ready")
+    });
 
     await app.RunAsync();
 }
