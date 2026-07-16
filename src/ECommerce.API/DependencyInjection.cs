@@ -4,6 +4,7 @@ using ECommerce.API.Exceptions;
 using ECommerce.API.Filters;
 using ECommerce.API.OpenApi;
 using Microsoft.Extensions.Options;
+using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace ECommerce.API;
@@ -43,6 +44,8 @@ public static class DependencyInjection
             options.IncludeXmlComments(xmlPath);
             options.OperationFilter<SwaggerDefaultValues>();
         });
+
+        services.AddHealthChecks();
 
         return services;
     }

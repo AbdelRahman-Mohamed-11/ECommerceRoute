@@ -36,6 +36,9 @@ public static class DependencyInjection
 
         services.AddScoped<DatabaseSeeder>();
 
+        services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+        services.AddScoped<IAttachmentService, AttachmentService>();
+
         AddBasketCaching(services, config);
 
         return services;
