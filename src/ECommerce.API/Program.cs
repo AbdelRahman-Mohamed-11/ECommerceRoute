@@ -1,4 +1,6 @@
+using Asp.Versioning;
 using ECommerce.API;
+using ECommerce.API.Endpoints;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -67,7 +69,15 @@ try
         await dbSeed.SeedAll();
     }
 
-    app.MapControllers();
+    var apiVersionSet = app.NewApiVersionSet()
+    .HasApiVersion(new ApiVersion(1, 0))
+    .ReportApiVersions()
+    .Build();
+
+    app.MapProductEndpoints(apiVersionSet);
+    app.MapTypeEndpoints(apiVersionSet);
+    app.MapBrandEndpoints(apiVersionSet);
+    app.MapBasketEndpoints(apiVersionSet);
 
     await app.RunAsync();
 }
