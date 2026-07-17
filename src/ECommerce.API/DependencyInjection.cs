@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Asp.Versioning;
 using ECommerce.API.Exceptions;
+using ECommerce.API.Extensions;
 using ECommerce.API.Filters;
 using ECommerce.API.OpenApi;
 using Microsoft.Extensions.Options;
@@ -13,7 +14,10 @@ public static class DependencyInjection
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddProblemDetails();
+
         services.AddExceptionHandler<GlobalExceptionHandler>();
+
+        services.AddCustomRateLimiting();
 
         services.AddControllers(options =>
         {
