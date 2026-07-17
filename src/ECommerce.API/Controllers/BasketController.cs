@@ -6,9 +6,11 @@ using ECommerce.UseCases.Basket.Dtos;
 using ECommerce.UseCases.Basket.Queries;
 using ECommerce.UseCases.Messaging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers;
 
+[EnableRateLimiting("basket-policy")]
 public class BasketController(ISender sender) : ApiControllerBase
 {
     [HttpGet]

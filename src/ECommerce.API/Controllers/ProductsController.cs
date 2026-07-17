@@ -1,13 +1,15 @@
-﻿using ECommerce.API.Filters;
+using ECommerce.API.Filters;
 using ECommerce.API.Models;
 using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers;
 
+[EnableRateLimiting("products-policy")]
 public class ProductsController(ISender sender) : ApiControllerBase
 {
     [OutputCache(Duration = 20, Tags = ["Products"])]
@@ -53,6 +55,7 @@ public class ProductsController(ISender sender) : ApiControllerBase
 
     [HttpPost]
     [Consumes("multipart/form-data")]
+    [EnableRateLimiting("upload-policy")]
     [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<Guid>>> Create(

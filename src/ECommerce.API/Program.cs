@@ -43,6 +43,8 @@ try
 
     app.UseOutputCache();
 
+    app.UseRateLimiter();
+
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
