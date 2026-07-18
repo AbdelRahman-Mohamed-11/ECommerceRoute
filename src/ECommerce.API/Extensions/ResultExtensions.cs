@@ -69,13 +69,7 @@ public static class ResultExtensions
 
         problem["traceId"] = context.TraceIdentifier;
 
-        //return Results.Json(problem, statusCode: statusCode);
-        return Results.Problem(
-            detail: result.Error.Message,
-            statusCode: statusCode,
-            title: title,
-            extensions: problem
-        );
+        return Results.Json(problem, statusCode: statusCode);
     }
 
     private static int ToStatusCode(this Error error) =>

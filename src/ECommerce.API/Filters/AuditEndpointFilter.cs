@@ -14,11 +14,17 @@ public class AuditEndpointFilter(
 
         var result = await next(context);
 
+        var statusCode = result switch
+        {
+            IStatusCodeHttpResult statusResult => statusResult.StatusCode,
+            _ => httpContext.Response.StatusCode
+        };
+
         logger.LogInformation(
             "User {UserId} executed {EndpointName} with Status Code {StatusCode}",
             userId,
             endpointName,
-            httpContext.Response.StatusCode);
+            statusCode);
 
         return result;
     }

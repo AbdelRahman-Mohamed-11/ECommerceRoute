@@ -4,6 +4,7 @@ using ECommerce.API.Extensions;
 using ECommerce.API.Filters;
 using ECommerce.API.Models;
 using ECommerce.UseCases.Messaging;
+using ECommerce.UseCases.Products.Commands.CreateProduct;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -35,8 +36,8 @@ public static class ProductEndpoints
         })
         .WithSummary("Gets paginated products")
         .WithDescription("Returns a paginated list of products with filtering and sorting options")
-        .CacheOutput("ProductsCache")
-        .Produces<ApiResponse<IReadOnlyList<GetAllProductsResponse>>>(StatusCodes.Status200OK); ;
+        .CacheOutput("Products")
+        .Produces<ApiResponse<IReadOnlyList<GetAllProductsResponse>>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id:guid}", async (
             Guid id,

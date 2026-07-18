@@ -61,7 +61,6 @@ public static class BasketEndpoints
 
             return result.FromResult(httpContext, ApiMessages.BasketItemAdded);
         })
-        .DisableAntiforgery()
         .WithSummary("Add item in the basket")
         .WithDescription("Returns the created item in the basket for the specified user ID")
         .Produces<ApiResponse<GetBasketResponse>>(StatusCodes.Status200OK)
@@ -151,9 +150,8 @@ public static class BasketEndpoints
                 new MergeBasketCommand(buyerIdResult.Value, request.AnonymousBuyerId),
                 ct);
 
-            return result.FromResult(httpContext, ApiMessages.BasketCleared);
+            return result.FromResult(httpContext, ApiMessages.BasketMerged);
         })
-        .DisableAntiforgery()
         .WithSummary("Merge the baskets together")
         .WithDescription("Returns the updated basket for the specified user ID")
         .Produces<ApiResponse<GetBasketResponse>>(StatusCodes.Status200OK)
