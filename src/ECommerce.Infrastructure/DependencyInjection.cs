@@ -87,14 +87,16 @@ public static class DependencyInjection
 
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IEmailVerificationCodeStore, HybridEmailVerificationCodeStore>();
-        services.AddScoped<IEmailSender, FluentEmailSender>();
+        // Student task: replace NoOpEmailSender with FluentEmailSender + AddFluentEmail(...).
+        services.AddScoped<IEmailSender, NoOpEmailSender>();
 
         services.Configure<EmailVerificationSettings>(
             config.GetSection(EmailVerificationSettings.SectionName));
 
-        AddFluentEmail(services, config);
+        services.Configure<EmailSettings>(config.GetSection(EmailSettings.SectionName));
 
         services.AddScoped<IAuditInterceptor, AuditInterceptor>();
         services.AddScoped<ISoftDeleteInterceptor, SoftDeleteInterceptor>();
@@ -115,32 +117,6 @@ public static class DependencyInjection
         AddBasketCaching(services, config);
 
         return services;
-    }
-
-    private static void AddFluentEmail(IServiceCollection services, IConfiguration config)
-    {
-        services.Configure<EmailSettings>(config.GetSection(EmailSettings.SectionName));
-
-        var emailSettings = config.GetSection(EmailSettings.SectionName).Get<EmailSettings>()
-            ?? throw new InvalidOperationException($"Configuration section '{EmailSettings.SectionName}' is missing.");
-
-        if (string.IsNullOrWhiteSpace(emailSettings.FromEmail))
-            throw new InvalidOperationException("Email:FromEmail is required.");
-
-        var builder = services.AddFluentEmail(emailSettings.FromEmail, emailSettings.FromName);
-
-        if (!string.IsNullOrWhiteSpace(emailSettings.Username))
-        {
-            builder.AddSmtpSender(
-                emailSettings.Host,
-                emailSettings.Port,
-                emailSettings.Username,
-                emailSettings.Password);
-        }
-        else
-        {
-            builder.AddSmtpSender(emailSettings.Host, emailSettings.Port);
-        }
     }
 
     private static void AddBasketCaching(IServiceCollection services, IConfiguration config)
