@@ -15,10 +15,7 @@ public static class DependencyInjection
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        services.AddControllers(options =>
-        {
-            options.Filters.Add<AuditActionFilter>();
-        });
+        services.AddScoped<AuditEndpointFilter>();
 
         services.AddApiVersioning(options =>
         {
@@ -27,7 +24,6 @@ public static class DependencyInjection
             options.ReportApiVersions = true;
             options.ApiVersionReader = new UrlSegmentApiVersionReader();
         })
-        .AddMvc()
         .AddApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'VVV";
