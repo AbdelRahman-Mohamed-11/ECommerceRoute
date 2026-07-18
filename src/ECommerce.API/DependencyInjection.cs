@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Asp.Versioning;
 using ECommerce.API.Exceptions;
 using ECommerce.API.Filters;
@@ -38,6 +38,22 @@ public static class DependencyInjection
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
             options.OperationFilter<SwaggerDefaultValues>();
+
+            options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Description = "JWT Bearer. Example: Bearer {token}",
+                In = Microsoft.OpenApi.ParameterLocation.Header,
+                Type = Microsoft.OpenApi.SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+
+            options.AddSecurityRequirement(document =>
+                new Microsoft.OpenApi.OpenApiSecurityRequirement
+                {
+                    [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document)] = []
+                });
         });
 
         return services;

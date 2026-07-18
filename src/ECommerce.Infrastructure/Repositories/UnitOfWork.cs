@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 namespace ECommerce.Infrastructure.Repositories;
 
 public class UnitOfWork(
-    StoreDbContext dbContext,
+    ApplicationDbContext dbContext,
     IAuditInterceptor auditInterceptor,
     ISoftDeleteInterceptor softDeleteInterceptor) : IUnitOfWork
 {

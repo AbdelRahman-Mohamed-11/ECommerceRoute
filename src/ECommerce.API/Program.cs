@@ -2,6 +2,7 @@ using Asp.Versioning;
 using ECommerce.API;
 using ECommerce.API.Endpoints;
 using ECommerce.Infrastructure;
+using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.UseCases;
@@ -60,20 +61,27 @@ try
         });
 
         await using var scope = app.Services.CreateAsyncScope();
+        var sp = scope.ServiceProvider;
 
-        var dbSeed = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<StoreDbContext>();
+        var identityDb = sp.GetRequiredService<AppIdentityDbContext>();
+        await identityDb.Database.MigrateAsync();
 
-        await dbContext.Database.MigrateAsync();
+        var appDb = sp.GetRequiredService<ApplicationDbContext>();
+        await appDb.Database.MigrateAsync();
 
-        await dbSeed.SeedAll();
+        await sp.GetRequiredService<DatabaseSeeder>().SeedAll();
     }
 
-    var apiVersionSet = app.NewApiVersionSet()
-    .HasApiVersion(new ApiVersion(1, 0))
-    .ReportApiVersions()
-    .Build();
+    app.UseAuthentication();
+    app.UseAuthorization();
 
+    var apiVersionSet = app.NewApiVersionSet()
+        .HasApiVersion(new ApiVersion(1, 0))
+        .ReportApiVersions()
+        .Build();
+
+    app.MapAuthEndpoints(apiVersionSet);
+    app.MapUserEndpoints(apiVersionSet);
     app.MapProductEndpoints(apiVersionSet);
     app.MapTypeEndpoints(apiVersionSet);
     app.MapBrandEndpoints(apiVersionSet);
