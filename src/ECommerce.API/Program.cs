@@ -1,10 +1,12 @@
 using Asp.Versioning;
 using ECommerce.API;
 using ECommerce.API.Endpoints;
+using ECommerce.API.Test;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.UseCases;
+using ECommerce.UseCases.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -31,7 +33,7 @@ try
         });
     });
 
-    builder.Services.AddPresentation();
+    builder.Services.AddPresentation(builder.Configuration);
 
     builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -45,8 +47,42 @@ try
 
     app.UseOutputCache();
 
+    app.UseAuthentication();
+
+    app.UseAuthorization();
+
+    var apiVersionSet = app.NewApiVersionSet()
+        .HasApiVersion(new ApiVersion(1, 0))
+        .ReportApiVersions()
+        .Build();
+
+    app.MapProductEndpoints(apiVersionSet);
+    app.MapTypeEndpoints(apiVersionSet);
+    app.MapBrandEndpoints(apiVersionSet);
+    app.MapBasketEndpoints(apiVersionSet);
+
     if (app.Environment.IsDevelopment())
     {
+        app.MapPost("/api/test/jwt", (
+            GenerateTestJwtRequest request,
+            IJwtTokenGenerator jwtTokenGenerator) =>
+        {
+            var token = jwtTokenGenerator.GenerateToken(
+                request.UserId,
+                request.Email,
+                request.displayName,
+                request.Roles);
+
+            return Results.Ok(new
+            {
+                accessToken = token,
+                expiresAt = token.ExpriesAtUtc
+            });
+        })
+        .WithTags("Test")
+        .WithSummary("Generates a test JWT")
+        .AllowAnonymous();
+
         app.UseSwagger();
 
         app.UseSwaggerUI(options =>
@@ -68,16 +104,6 @@ try
 
         await dbSeed.SeedAll();
     }
-
-    var apiVersionSet = app.NewApiVersionSet()
-    .HasApiVersion(new ApiVersion(1, 0))
-    .ReportApiVersions()
-    .Build();
-
-    app.MapProductEndpoints(apiVersionSet);
-    app.MapTypeEndpoints(apiVersionSet);
-    app.MapBrandEndpoints(apiVersionSet);
-    app.MapBasketEndpoints(apiVersionSet);
 
     await app.RunAsync();
 }

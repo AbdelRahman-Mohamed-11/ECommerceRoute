@@ -1,5 +1,6 @@
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Caching;
+using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -20,7 +21,15 @@ public static class DependencyInjection
     {
         services.AddDbContext<StoreDbContext>(options =>
         {
-            options.UseSqlServer(config.GetConnectionString("DefaultConnection"))
+            options.UseSqlServer(config.GetConnectionString("DefaultConnection"), sql => 
+            sql.MigrationsHistoryTable("__ApplicationMigrationsHistory"))
+                   .EnableSensitiveDataLogging();
+        });
+
+        services.AddDbContext<IdentityStoreDbContext>(options =>
+        {
+            options.UseSqlServer(config.GetConnectionString("DefaultConnection"), sql =>
+            sql.MigrationsHistoryTable("__IdentityMigrationsHistory"))
                    .EnableSensitiveDataLogging();
         });
 
@@ -33,10 +42,15 @@ public static class DependencyInjection
 
         services.AddScoped<IDataSeeder, ProductBrandSeeder>();
         services.AddScoped<IDataSeeder, ProductTypeSeeder>();
+        services.AddScoped<IDataSeeder, IdentitySeeder>();
 
         services.AddScoped<DatabaseSeeder>();
 
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+
+        services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
+
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         services.AddScoped<IAttachmentService, AttachmentService>();
 

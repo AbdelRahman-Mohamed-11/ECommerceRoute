@@ -14,6 +14,9 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(typeof(GetPagedProductsQueryValidator).Assembly);
 
+
+
+
         return services;
     }
 }
