@@ -1,4 +1,3 @@
 ﻿namespace ECommerce.UseCases.Common;
 
-public record AccessTokenResult(string AccessToken, DateTimeOffset ExpriesAtUtc);
-
+public record AccessTokenResult(string Token, DateTimeOffset ExpiresAtUtc);

@@ -1,12 +1,11 @@
 using Asp.Versioning;
 using ECommerce.API;
 using ECommerce.API.Endpoints;
-using ECommerce.API.Test;
 using ECommerce.Infrastructure;
+using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.UseCases;
-using ECommerce.UseCases.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -16,7 +15,6 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    // serliog + seq
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -29,11 +27,11 @@ try
         options.AddPolicy("Products", policy =>
         {
             policy.Expire(TimeSpan.FromMinutes(1))
-            .SetVaryByQuery("pagesize", "pageNumber");
+                .SetVaryByQuery("pagesize", "pageNumber");
         });
     });
 
-    builder.Services.AddPresentation(builder.Configuration);
+    builder.Services.AddPresentation();
 
     builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -56,6 +54,8 @@ try
         .ReportApiVersions()
         .Build();
 
+    app.MapAuthEndpoints(apiVersionSet);
+    app.MapUserEndpoints(apiVersionSet);
     app.MapProductEndpoints(apiVersionSet);
     app.MapTypeEndpoints(apiVersionSet);
     app.MapBrandEndpoints(apiVersionSet);
@@ -63,26 +63,6 @@ try
 
     if (app.Environment.IsDevelopment())
     {
-        app.MapPost("/api/test/jwt", (
-            GenerateTestJwtRequest request,
-            IJwtTokenGenerator jwtTokenGenerator) =>
-        {
-            var token = jwtTokenGenerator.GenerateToken(
-                request.UserId,
-                request.Email,
-                request.displayName,
-                request.Roles);
-
-            return Results.Ok(new
-            {
-                accessToken = token,
-                expiresAt = token.ExpriesAtUtc
-            });
-        })
-        .WithTags("Test")
-        .WithSummary("Generates a test JWT")
-        .AllowAnonymous();
-
         app.UseSwagger();
 
         app.UseSwaggerUI(options =>
@@ -96,13 +76,15 @@ try
         });
 
         await using var scope = app.Services.CreateAsyncScope();
+        var sp = scope.ServiceProvider;
 
-        var dbSeed = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<StoreDbContext>();
+        var identityDb = sp.GetRequiredService<IdentityStoreDbContext>();
+        await identityDb.Database.MigrateAsync();
 
-        await dbContext.Database.MigrateAsync();
+        var appDb = sp.GetRequiredService<StoreDbContext>();
+        await appDb.Database.MigrateAsync();
 
-        await dbSeed.SeedAll();
+        await sp.GetRequiredService<DatabaseSeeder>().SeedAll();
     }
 
     await app.RunAsync();

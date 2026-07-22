@@ -1,3 +1,4 @@
+using System.Text;
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Caching;
 using ECommerce.Infrastructure.Identity;
@@ -8,10 +9,13 @@ using ECommerce.Infrastructure.Repositories;
 using ECommerce.Infrastructure.Services;
 using ECommerce.UseCases.Common.Interfaces;
 using ECommerce.UseCases.Common.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ECommerce.Infrastructure;
 
@@ -19,18 +23,21 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
+        var connectionString = config.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
+
         services.AddDbContext<StoreDbContext>(options =>
         {
-            options.UseSqlServer(config.GetConnectionString("DefaultConnection"), sql => 
-            sql.MigrationsHistoryTable("__ApplicationMigrationsHistory"))
-                   .EnableSensitiveDataLogging();
+            options.UseSqlServer(connectionString, sql =>
+                    sql.MigrationsHistoryTable("__ApplicationMigrationsHistory"))
+                .EnableSensitiveDataLogging();
         });
 
         services.AddDbContext<IdentityStoreDbContext>(options =>
         {
-            options.UseSqlServer(config.GetConnectionString("DefaultConnection"), sql =>
-            sql.MigrationsHistoryTable("__IdentityMigrationsHistory"))
-                   .EnableSensitiveDataLogging();
+            options.UseSqlServer(connectionString, sql =>
+                    sql.MigrationsHistoryTable("__IdentityMigrationsHistory"))
+                .EnableSensitiveDataLogging();
         });
 
         services.AddScoped<IAuditInterceptor, AuditInterceptor>();
@@ -48,9 +55,74 @@ public static class DependencyInjection
 
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
 
+        services
+            .AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.Password.RequireDigit = true;
+                options.User.RequireUniqueEmail = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.SignIn.RequireConfirmedEmail = true;
+                options.SignIn.RequireConfirmedAccount = true;
+            })
+            .AddRoles<ApplicationRole>()
+            .AddSignInManager()
+            .AddEntityFrameworkStores<IdentityStoreDbContext>()
+            .AddDefaultTokenProviders();
+
         services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
 
+        var jwtSettings = config.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
+            ?? throw new InvalidOperationException(
+                $"Configuration section '{JwtSettings.SectionName}' is missing.");
+
+        if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || jwtSettings.Secret.Length < 32)
+            throw new InvalidOperationException("Jwt:Secret must be at least 32 characters.");
+
+        services
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings.Audience,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+        services.AddAuthorization();
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IEmailVerificationCodeStore, EmailVerificationCodeStore>();
+
+        services.Configure<EmailVerificationSettings>(
+            config.GetSection(EmailVerificationSettings.SectionName));
+
+        services.Configure<EmailSettings>(config.GetSection(EmailSettings.SectionName));
+        var emailSettings = config.GetSection(EmailSettings.SectionName).Get<EmailSettings>()
+            ?? throw new InvalidOperationException(
+                $"Configuration section '{EmailSettings.SectionName}' is missing.");
+
+        services
+            .AddFluentEmail(emailSettings.FromEmail, emailSettings.FromName)
+            .AddSmtpSender(emailSettings.Host, emailSettings.Port);
+
+        services.AddScoped<IEmailSender, FluentEmailSender>();
 
         services.AddScoped<IAttachmentService, AttachmentService>();
 
@@ -68,14 +140,14 @@ public static class DependencyInjection
 
         services.AddSingleton<IValidateOptions<CacheEntryPolicy>, CacheEntryPolicyValidator>();
 
-        var redisConnection = config.GetConnectionString("Redis");
+        var redisConnection = config.GetConnectionString("Redis")
+            ?? config.GetConnectionString("redis");
 
         if (!string.IsNullOrWhiteSpace(redisConnection))
         {
             services.AddStackExchangeRedisCache(options =>
                 options.Configuration = redisConnection);
         }
-      
 
         services.AddHybridCache();
 

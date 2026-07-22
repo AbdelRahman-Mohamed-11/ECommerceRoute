@@ -17,6 +17,16 @@ public static class ResultExtensions
         return Results.Ok(response);
     }
 
+    public static IResult FromResult(
+        this Result result,
+        HttpContext context,
+        string successMessage)
+    {
+        return result.IsFailure
+            ? Problem(result, context)
+            : Success<object?>(null, context, successMessage);
+    }
+
     public static IResult FromResult<T>(
         this Result<T> result,
         HttpContext context,
@@ -40,8 +50,8 @@ public static class ResultExtensions
             : Success(result.Value.Items, context, successMessage, new PaginationMeta(pageNumber, pageSize, result.Value.TotalCount));
     }
 
-    public static IResult Problem<T>(
-        this Result<T> result, 
+    public static IResult Problem(
+        this Result result,
         HttpContext context)
     {
         var statusCode = result.Error.ToStatusCode();
@@ -61,7 +71,6 @@ public static class ResultExtensions
                 [result.Error.Code] = [result.Error.Message]
             };
         }
-
         else
         {
             problem["detail"] = result.Error.Message;
@@ -71,6 +80,11 @@ public static class ResultExtensions
 
         return Results.Json(problem, statusCode: statusCode);
     }
+
+    public static IResult Problem<T>(
+        this Result<T> result,
+        HttpContext context) =>
+        Problem((Result)result, context);
 
     private static int ToStatusCode(this Error error) =>
         error.Type switch

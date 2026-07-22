@@ -50,6 +50,6 @@ public sealed class JwtTokenGenerator(IOptions<JwtSettings> settings)
 
         var written = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return new AccessTokenResult(written, expriresAt);
+        return new AccessTokenResult(Token: written, ExpiresAtUtc: expriresAt);
     }
 }

@@ -1,23 +1,17 @@
 ﻿using System.Reflection;
-using System.Text;
 using Asp.Versioning;
 using ECommerce.API.Exceptions;
 using ECommerce.API.Filters;
 using ECommerce.API.OpenApi;
-using ECommerce.Infrastructure.Identity;
-using ECommerce.UseCases.Common.Settings;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace ECommerce.API;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -47,54 +41,23 @@ public static class DependencyInjection
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
             options.OperationFilter<SwaggerDefaultValues>();
-        });
 
-
-        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
-        {
-            options.Password.RequiredLength = 8;
-
-            options.User.RequireUniqueEmail = true;
-
-            options.SignIn.RequireConfirmedEmail = true;
-
-        })
-            .AddEntityFrameworkStores<IdentityStoreDbContext>()
-            .AddDefaultTokenProviders();
-
-
-        var jwtSettings = config.GetSection(JwtSettings.SectionName).Get<JwtSettings>();
-
-        services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                ValidateIssuer = true,
-                ValidIssuer = jwtSettings.Issuer,
+                Name = "Authorization",
+                Description = "JWT Bearer. Example: Bearer {token}",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
 
-                ValidateAudience = true,
-                ValidAudience = jwtSettings.Audience,
-
-
-                ValidateIssuerSigningKey = true,
-
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
-
-                ValidateLifetime = true,
-
-
-                ClockSkew = TimeSpan.FromMinutes(1)
-            };
+            options.AddSecurityRequirement(document =>
+                new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                });
         });
-
-
-        services.AddAuthorization(); // enable to read from [athorize]
 
         return services;
     }
