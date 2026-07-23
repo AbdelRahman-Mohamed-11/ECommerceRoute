@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,6 +12,12 @@ public sealed class UserAddressConfiguration : IEntityTypeConfiguration<UserAddr
 
         BaseEntityConfiguration.Configure(builder);
 
+        builder.Property(x => x.UserId)
+            .IsRequired();
+
+        builder.Property(x => x.Label)
+            .HasMaxLength(UserAddress.MaxLabelLength)
+            .IsRequired();
 
         builder.Property(x => x.RecipientFirstName)
             .HasMaxLength(UserAddress.MaxNameLength)

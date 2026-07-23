@@ -28,8 +28,6 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
         builder.Property(x => x.IsDeleted)
             .HasDefaultValue(false);
 
-        builder.HasQueryFilter(x => !x.IsDeleted);
-
         builder.HasIndex(x => x.TokenHash)
             .IsUnique();
 

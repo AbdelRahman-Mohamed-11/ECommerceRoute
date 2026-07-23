@@ -5,21 +5,27 @@ namespace ECommerce.UseCases.Common.Interfaces;
 
 public interface IIdentityService
 {
-    Task<Result<IdentityUserInfo>> GetUserByEmailAsync(
+    Task<Result<AuthUserSnapshot>> CreateUserAsync(
+        string email,
+        string password,
+        string? displayName,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<AuthUserSnapshot>> ValidateCredentialsAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<AuthUserSnapshot>> GetUserByEmailAsync(
         string email,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IdentityUserInfo>> GetUserByIdAsync(
+    Task<Result<AuthUserSnapshot>> GetUserByIdAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
 
-    Task<bool> IsEmailConfirmedAsync(
-        string email,
-        CancellationToken cancellationToken = default);
-
-    Task<Result<Guid>> CreateUserAsync(
-        string email,
-        string password,
+    Task<Result<AuthUserSnapshot>> UpdateProfileAsync(
+        Guid userId,
         string? displayName,
         CancellationToken cancellationToken = default);
 
@@ -27,17 +33,11 @@ public interface IIdentityService
         string email,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IdentityUserInfo>> ValidateCredentialsAsync(
+    Task<bool> IsEmailConfirmedAsync(
         string email,
-        string password,
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<string>> GetRolesAsync(
         Guid userId,
-        CancellationToken cancellationToken = default);
-
-    Task<Result<IdentityUserInfo>> UpdateProfileAsync(
-        Guid userId,
-        string? displayName,
         CancellationToken cancellationToken = default);
 }

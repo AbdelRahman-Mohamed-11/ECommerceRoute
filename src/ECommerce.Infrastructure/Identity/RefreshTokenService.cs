@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace ECommerce.Infrastructure.Identity;
 
 public sealed class RefreshTokenService(
-    IdentityStoreDbContext dbContext,
+    AppIdentityDbContext dbContext,
     IOptions<JwtSettings> settings) : IRefreshTokenService
 {
     private readonly JwtSettings _settings = settings.Value;
@@ -39,6 +39,7 @@ public sealed class RefreshTokenService(
         if (existing is null)
             return Result<RefreshTokenIssueResult>.Failure(IdentityErrors.InvalidRefreshToken);
 
+        // Reuse of a revoked token usually means theft — revoke the whole family.
         if (existing.IsRevoked)
         {
             await RevokeAllActiveForUserAsync(existing.UserId, cancellationToken);

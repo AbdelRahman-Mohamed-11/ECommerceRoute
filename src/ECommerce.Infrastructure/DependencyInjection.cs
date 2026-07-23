@@ -26,34 +26,19 @@ public static class DependencyInjection
         var connectionString = config.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
 
-        services.AddDbContext<StoreDbContext>(options =>
+        services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(connectionString, sql =>
-                    sql.MigrationsHistoryTable("__ApplicationMigrationsHistory"))
+                    sql.MigrationsHistoryTable("__ApplicationMigrationsHistory", "app"))
                 .EnableSensitiveDataLogging();
         });
 
-        services.AddDbContext<IdentityStoreDbContext>(options =>
+        services.AddDbContext<AppIdentityDbContext>(options =>
         {
             options.UseSqlServer(connectionString, sql =>
-                    sql.MigrationsHistoryTable("__IdentityMigrationsHistory"))
+                    sql.MigrationsHistoryTable("__IdentityMigrationsHistory", "identity"))
                 .EnableSensitiveDataLogging();
         });
-
-        services.AddScoped<IAuditInterceptor, AuditInterceptor>();
-        services.AddScoped<ISoftDeleteInterceptor, SoftDeleteInterceptor>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        services.AddScoped(typeof(IReadRepository<>), typeof(Repository<>));
-        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-        services.AddScoped<IDataSeeder, ProductBrandSeeder>();
-        services.AddScoped<IDataSeeder, ProductTypeSeeder>();
-        services.AddScoped<IDataSeeder, IdentitySeeder>();
-
-        services.AddScoped<DatabaseSeeder>();
-
-        services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
 
         services
             .AddIdentityCore<ApplicationUser>(options =>
@@ -66,15 +51,12 @@ public static class DependencyInjection
                 options.SignIn.RequireConfirmedAccount = true;
             })
             .AddRoles<ApplicationRole>()
-            .AddSignInManager()
-            .AddEntityFrameworkStores<IdentityStoreDbContext>()
+            .AddEntityFrameworkStores<AppIdentityDbContext>()
             .AddDefaultTokenProviders();
 
         services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
-
         var jwtSettings = config.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
-            ?? throw new InvalidOperationException(
-                $"Configuration section '{JwtSettings.SectionName}' is missing.");
+            ?? throw new InvalidOperationException($"Configuration section '{JwtSettings.SectionName}' is missing.");
 
         if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || jwtSettings.Secret.Length < 32)
             throw new InvalidOperationException("Jwt:Secret must be at least 32 characters.");
@@ -94,8 +76,7 @@ public static class DependencyInjection
                     ValidateAudience = true,
                     ValidAudience = jwtSettings.Audience,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
@@ -108,7 +89,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
-        services.AddScoped<IEmailVerificationCodeStore, EmailVerificationCodeStore>();
+        services.AddScoped<IEmailVerificationCodeStore, HybridEmailVerificationCodeStore>();
 
         services.Configure<EmailVerificationSettings>(
             config.GetSection(EmailVerificationSettings.SectionName));
@@ -124,6 +105,20 @@ public static class DependencyInjection
 
         services.AddScoped<IEmailSender, FluentEmailSender>();
 
+        services.AddScoped<IAuditInterceptor, AuditInterceptor>();
+        services.AddScoped<ISoftDeleteInterceptor, SoftDeleteInterceptor>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped(typeof(IReadRepository<>), typeof(Repository<>));
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+        services.AddScoped<IDataSeeder, IdentitySeeder>();
+        services.AddScoped<IDataSeeder, ProductBrandSeeder>();
+        services.AddScoped<IDataSeeder, ProductTypeSeeder>();
+
+        services.AddScoped<DatabaseSeeder>();
+
+        services.Configure<CloudinarySettings>(config.GetSection(nameof(CloudinarySettings)));
         services.AddScoped<IAttachmentService, AttachmentService>();
 
         AddBasketCaching(services, config);

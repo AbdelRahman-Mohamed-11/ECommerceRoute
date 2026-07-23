@@ -4,7 +4,7 @@ using ECommerce.Infrastructure.Persistence.Seeding.Data.Models;
 
 namespace ECommerce.Infrastructure.Persistence.Seeding;
 
-public class ProductBrandSeeder(StoreDbContext dbContext) : IDataSeeder
+public class ProductBrandSeeder(ApplicationDbContext dbContext) : IDataSeeder
 {
     public int Order => 1;
 

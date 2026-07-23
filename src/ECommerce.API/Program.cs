@@ -78,10 +78,10 @@ try
         await using var scope = app.Services.CreateAsyncScope();
         var sp = scope.ServiceProvider;
 
-        var identityDb = sp.GetRequiredService<IdentityStoreDbContext>();
+        var identityDb = sp.GetRequiredService<AppIdentityDbContext>();
         await identityDb.Database.MigrateAsync();
 
-        var appDb = sp.GetRequiredService<StoreDbContext>();
+        var appDb = sp.GetRequiredService<ApplicationDbContext>();
         await appDb.Database.MigrateAsync();
 
         await sp.GetRequiredService<DatabaseSeeder>().SeedAll();

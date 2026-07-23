@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Domain.Specifications;
 using ECommerce.Infrastructure.Persistence.DbContexts;
@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repositories;
 
-public sealed class Repository<T>(StoreDbContext dbContext)
+public sealed class Repository<T>(ApplicationDbContext dbContext)
     : IRepository<T> where T : BaseEntity
 {
     private readonly DbSet<T> _dbSet = dbContext.Set<T>();

@@ -8,9 +8,11 @@ using Microsoft.Extensions.Options;
 namespace ECommerce.Infrastructure.Identity;
 
 /// <summary>
-/// Stores a SHA-256 hash of the verification code in HybridCache (one-time use).
+/// Teaching mode: stores the <strong>plain</strong> verification code in HybridCache
+/// so students can inspect Redis / local cache and copy the code into confirm-email.
+/// Production should store a hash instead of the plain code.
 /// </summary>
-public sealed class EmailVerificationCodeStore(
+public sealed class HybridEmailVerificationCodeStore(
     HybridCache cache,
     IOptions<EmailVerificationSettings> settings) : IEmailVerificationCodeStore
 {
@@ -24,7 +26,7 @@ public sealed class EmailVerificationCodeStore(
         var options = settings.Value;
         var key = BuildKey(email);
         var entry = new VerificationEntry(
-            CodeHash: HashCode(code),
+            Code: code.Trim(),
             FailedAttempts: 0);
 
         await cache.SetAsync(
@@ -57,8 +59,8 @@ public sealed class EmailVerificationCodeStore(
             return false;
         }
 
-        var expected = Encoding.UTF8.GetBytes(entry.CodeHash);
-        var actual = Encoding.UTF8.GetBytes(HashCode(code));
+        var expected = Encoding.UTF8.GetBytes(entry.Code);
+        var actual = Encoding.UTF8.GetBytes(code.Trim());
 
         if (expected.Length != actual.Length
             || !CryptographicOperations.FixedTimeEquals(expected, actual))
@@ -115,11 +117,5 @@ public sealed class EmailVerificationCodeStore(
     private static string BuildKey(string email) =>
         KeyPrefix + email.Trim().ToLowerInvariant();
 
-    private static string HashCode(string code)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(code.Trim()));
-        return Convert.ToHexString(bytes);
-    }
-
-    private sealed record VerificationEntry(string CodeHash, int FailedAttempts);
+    private sealed record VerificationEntry(string Code, int FailedAttempts);
 }

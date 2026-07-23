@@ -54,37 +54,44 @@ public static class ResultExtensions
         this Result result,
         HttpContext context)
     {
-        var statusCode = result.Error.ToStatusCode();
-        var title = result.Error.ToTitle();
+        return WriteProblem(result.Error, context);
+    }
+
+    public static IResult Problem<T>(
+        this Result<T> result, 
+        HttpContext context)
+    {
+        return WriteProblem(result.Error, context);
+    }
+
+    private static IResult WriteProblem(Error error, HttpContext context)
+    {
+        var statusCode = error.ToStatusCode();
+        var title = error.ToTitle();
 
         var problem = new Dictionary<string, object?>
         {
-            ["type"] = $"https://example.com/errors/{result.Error.Code}",
+            ["type"] = $"https://example.com/errors/{error.Code}",
             ["title"] = title,
             ["status"] = statusCode,
         };
 
-        if (result.Error.Type is ErrorType.Validation)
+        if (error.Type is ErrorType.Validation)
         {
             problem["errors"] = new Dictionary<string, string[]>
             {
-                [result.Error.Code] = [result.Error.Message]
+                [error.Code] = [error.Message]
             };
         }
         else
         {
-            problem["detail"] = result.Error.Message;
+            problem["detail"] = error.Message;
         }
 
         problem["traceId"] = context.TraceIdentifier;
 
         return Results.Json(problem, statusCode: statusCode);
     }
-
-    public static IResult Problem<T>(
-        this Result<T> result,
-        HttpContext context) =>
-        Problem((Result)result, context);
 
     private static int ToStatusCode(this Error error) =>
         error.Type switch

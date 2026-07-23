@@ -10,16 +10,20 @@ public sealed class UserAddressesByUserIdSpecification
     public UserAddressesByUserIdSpecification(Guid userId)
     {
         Query
-            .Where(address => address.UserId == userId)
-            .Select(address => new UserAddressResponse(
-                address.Id,
-                address.RecipientFirstName,
-                address.RecipientLastName,
-                address.PhoneNumber,
-                address.Country,
-                address.City,
-                address.Street,
-                address.PostalCode,
-                address.IsDefault));
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.IsDefaultShipping)
+            .ThenBy(a => a.Label)
+            .Select(a => new UserAddressResponse(
+                a.Id,
+                a.Label,
+                a.RecipientFirstName,
+                a.RecipientLastName,
+                a.PhoneNumber,
+                a.Country,
+                a.City,
+                a.Street,
+                a.PostalCode,
+                a.IsDefaultShipping,
+                a.IsDefaultBilling));
     }
 }

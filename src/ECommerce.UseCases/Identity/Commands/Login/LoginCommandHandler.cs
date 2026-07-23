@@ -32,6 +32,8 @@ public sealed class LoginCommandHandler
             request.Password,
             cancellationToken);
 
+        // Generic failure for wrong password / missing user — never reveal which.
+        // EmailNotConfirmed is intentional so the client can prompt for verification.
         if (validateResult.IsFailure)
         {
             return Result<AuthResponse>.Failure(

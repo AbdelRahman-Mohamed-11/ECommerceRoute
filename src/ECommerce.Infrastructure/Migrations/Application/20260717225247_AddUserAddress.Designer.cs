@@ -11,16 +11,16 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ECommerce.Infrastructure.Migrations.Application
 {
-    [DbContext(typeof(StoreDbContext))]
-    [Migration("20260719153057_IntialMigration")]
-    partial class IntialMigration
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20260717225247_AddUserAddress")]
+    partial class AddUserAddress
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -156,16 +156,16 @@ namespace ECommerce.Infrastructure.Migrations.Application
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("IsDefault")
+                    b.Property<bool>("IsDefaultBilling")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                    b.Property<bool>("IsDefaultShipping")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
@@ -191,9 +191,6 @@ namespace ECommerce.Infrastructure.Migrations.Application
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");

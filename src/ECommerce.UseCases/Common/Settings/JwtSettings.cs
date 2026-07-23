@@ -1,4 +1,4 @@
-﻿namespace ECommerce.UseCases.Common.Settings;
+namespace ECommerce.UseCases.Common.Settings;
 
 public sealed class JwtSettings
 {

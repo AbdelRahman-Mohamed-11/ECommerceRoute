@@ -24,6 +24,7 @@ public sealed class AddUserAddressCommandHandler(
         var createResult = UserAddress.Create(
             Guid.NewGuid(),
             currentUser.UserId.Value,
+            request.Label,
             request.RecipientFirstName,
             request.RecipientLastName,
             request.PhoneNumber,
@@ -31,7 +32,8 @@ public sealed class AddUserAddressCommandHandler(
             request.City,
             request.Street,
             request.PostalCode,
-            request.IsDefault);
+            request.IsDefaultShipping,
+            request.IsDefaultBilling);
 
         if (createResult.IsFailure)
             return Result<UserAddressResponse>.Failure(createResult.Error);
@@ -42,6 +44,7 @@ public sealed class AddUserAddressCommandHandler(
 
         return Result<UserAddressResponse>.Success(new UserAddressResponse(
             address.Id,
+            address.Label,
             address.RecipientFirstName,
             address.RecipientLastName,
             address.PhoneNumber,
@@ -49,6 +52,7 @@ public sealed class AddUserAddressCommandHandler(
             address.City,
             address.Street,
             address.PostalCode,
-            address.IsDefault));
+            address.IsDefaultShipping,
+            address.IsDefaultBilling));
     }
 }

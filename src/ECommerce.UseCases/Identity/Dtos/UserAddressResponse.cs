@@ -2,6 +2,7 @@ namespace ECommerce.UseCases.Identity.Dtos;
 
 public sealed record UserAddressResponse(
     Guid Id,
+    string Label,
     string RecipientFirstName,
     string RecipientLastName,
     string PhoneNumber,
@@ -9,4 +10,5 @@ public sealed record UserAddressResponse(
     string City,
     string Street,
     string PostalCode,
-    bool IsDefault);
+    bool IsDefaultShipping,
+    bool IsDefaultBilling);

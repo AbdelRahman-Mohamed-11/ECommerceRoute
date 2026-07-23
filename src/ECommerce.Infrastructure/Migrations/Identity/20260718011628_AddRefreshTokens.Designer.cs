@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ECommerce.Infrastructure.Migrations.Identity
 {
-    [DbContext(typeof(IdentityStoreDbContext))]
-    [Migration("20260722110903_AddRefreshTokens")]
+    [DbContext(typeof(AppIdentityDbContext))]
+    [Migration("20260718011628_AddRefreshTokens")]
     partial class AddRefreshTokens
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace ECommerce.Infrastructure.Migrations.Identity
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);

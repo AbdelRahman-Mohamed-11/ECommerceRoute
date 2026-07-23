@@ -34,7 +34,7 @@ public static class AuthEndpoints
             HttpContext httpContext,
             CancellationToken ct) =>
         {
-            Domain.Shared.Result<EmailSentResponse>? result = await sender.Send(command, ct);
+            var result = await sender.Send(command, ct);
             if (result.IsFailure)
                 return result.Problem(httpContext);
 

@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Persistence.DbContexts;
 
-public class StoreDbContext(DbContextOptions<StoreDbContext> options) 
-        : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : DbContext(options)
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductBrand> Brands => Set<ProductBrand>();
@@ -13,10 +13,10 @@ public class StoreDbContext(DbContextOptions<StoreDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(StoreDbContext).Assembly, 
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(ApplicationDbContext).Assembly,
             type => type.Namespace == "ECommerce.Infrastructure.Persistence.Configurations");
-        
-        
+
         base.OnModelCreating(modelBuilder);
     }
 }

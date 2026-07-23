@@ -10,6 +10,7 @@ public static class BuyerIdExtensions
 
     public static Result<Guid> GetBuyerId(this HttpContext context)
     {
+        // Authenticated shopper → buyer id comes from the JWT (NameIdentifier / sub).
         if (context.User.Identity?.IsAuthenticated == true)
         {
             var userIdValue = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -19,6 +20,7 @@ public static class BuyerIdExtensions
             return userId;
         }
 
+        // Guest shopper → client-generated GUID via X-Buyer-Id header.
         return GetGuestBuyerId(context.Request.Headers);
     }
 

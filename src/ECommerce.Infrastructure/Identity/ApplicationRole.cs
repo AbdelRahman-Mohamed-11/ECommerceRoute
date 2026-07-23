@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace ECommerce.Infrastructure.Identity;
 
-public class ApplicationRole : IdentityRole<Guid>
+public sealed class ApplicationRole : IdentityRole<Guid>
 {
     public ApplicationRole() => Id = Guid.NewGuid();
 
-    public ApplicationRole(string name)
-        : this() => Name = name; 
+    public ApplicationRole(string roleName) : this() => Name = roleName;
 
     public string? Description { get; set; }
 }
