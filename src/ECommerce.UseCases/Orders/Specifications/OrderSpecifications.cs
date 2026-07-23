@@ -39,3 +39,16 @@ public sealed class OrdersByUserIdCountSpecification : Specification<Order>
         Query.Where(o => o.UserId == userId).AsNoTracking();
     }
 }
+
+public sealed class OrderByPaymentIntentSpecification : Specification<Order>
+{
+    public OrderByPaymentIntentSpecification(string paymentIntentId, bool tracking = false)
+    {
+        var query = Query.Where(o => o.PaymentIntentId == paymentIntentId);
+
+        if (tracking)
+            query.AsTracking();
+        else
+            query.AsNoTracking();
+    }
+}

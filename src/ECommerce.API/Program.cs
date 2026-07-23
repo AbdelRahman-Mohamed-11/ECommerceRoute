@@ -62,6 +62,7 @@ try
     app.MapBasketEndpoints(apiVersionSet);
     app.MapDeliveryMethodEndpoints(apiVersionSet);
     app.MapOrderEndpoints(apiVersionSet);
+    app.MapPaymentEndpoints(apiVersionSet);
 
     if (app.Environment.IsDevelopment())
     {

@@ -33,5 +33,7 @@ public sealed record OrderResponse(
     decimal SubTotal,
     decimal ShippingCost,
     decimal Total,
+    string? PaymentIntentId,
+    DateTimeOffset? PaidAtUtc,
     DateTimeOffset CreatedAt,
     IReadOnlyList<OrderItemResponse> Items);

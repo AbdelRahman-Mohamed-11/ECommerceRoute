@@ -24,6 +24,8 @@ public static class OrderMappings
             order.SubTotal,
             order.ShippingCost,
             order.Total,
+            order.PaymentIntentId,
+            order.PaidAtUtc,
             order.CreatedAt,
             order.Items.Select(i => new OrderItemResponse(
                 i.Id,

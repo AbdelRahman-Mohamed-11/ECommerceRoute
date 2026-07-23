@@ -40,6 +40,9 @@ public sealed class Order : BaseEntity
     public decimal ShippingCost { get; private set; }
     public decimal Total { get; private set; }
 
+    public string? PaymentIntentId { get; private set; }
+    public DateTimeOffset? PaidAtUtc { get; private set; }
+
     public IReadOnlyCollection<OrderItem> Items => _items;
 
     public static Result<Order> Create(
@@ -126,6 +129,43 @@ public sealed class Order : BaseEntity
             return Result.Failure(OrderErrors.CannotCancel);
 
         Status = OrderStatus.Cancelled;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return Result.Success();
+    }
+
+    public Result AttachPaymentIntent(string paymentIntentId)
+    {
+        if (Status != OrderStatus.Pending)
+            return Result.Failure(OrderErrors.InvalidPaymentState);
+
+        if (string.IsNullOrWhiteSpace(paymentIntentId))
+            return Result.Failure(OrderErrors.InvalidPaymentIntent);
+
+        PaymentIntentId = paymentIntentId.Trim();
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return Result.Success();
+    }
+
+    public Result MarkAsPaid(string paymentIntentId)
+    {
+        if (Status == OrderStatus.Cancelled)
+            return Result.Failure(OrderErrors.CannotPayCancelled);
+
+        if (Status is not OrderStatus.Pending and not OrderStatus.Processing)
+        {
+            if (PaymentIntentId == paymentIntentId)
+                return Result.Success();
+
+            return Result.Failure(OrderErrors.InvalidPaymentState);
+        }
+
+        if (!string.IsNullOrWhiteSpace(PaymentIntentId)
+            && PaymentIntentId != paymentIntentId)
+            return Result.Failure(OrderErrors.PaymentIntentMismatch);
+
+        PaymentIntentId = paymentIntentId;
+        PaidAtUtc = DateTimeOffset.UtcNow;
+        Status = OrderStatus.Processing;
         UpdatedAt = DateTimeOffset.UtcNow;
         return Result.Success();
     }

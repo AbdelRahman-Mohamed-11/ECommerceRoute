@@ -6,6 +6,7 @@ using ECommerce.Infrastructure.Persistence.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.Infrastructure.Repositories;
+using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Services;
 using ECommerce.UseCases.Common.Interfaces;
 using ECommerce.UseCases.Common.Settings;
@@ -121,6 +122,9 @@ public static class DependencyInjection
 
         services.Configure<CloudinarySettings>(config.GetSection(nameof(CloudinarySettings)));
         services.AddScoped<IAttachmentService, AttachmentService>();
+
+        services.Configure<StripeSettings>(config.GetSection(StripeSettings.SectionName));
+        services.AddScoped<IPaymentService, StripePaymentService>();
 
         AddBasketCaching(services, config);
 
