@@ -60,6 +60,8 @@ try
     app.MapTypeEndpoints(apiVersionSet);
     app.MapBrandEndpoints(apiVersionSet);
     app.MapBasketEndpoints(apiVersionSet);
+    app.MapDeliveryMethodEndpoints(apiVersionSet);
+    app.MapOrderEndpoints(apiVersionSet);
 
     if (app.Environment.IsDevelopment())
     {

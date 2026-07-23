@@ -21,4 +21,15 @@ public static class ApiMessages
     public const string UserProfileUpdated = "Profile updated successfully.";
     public const string UserAddressesRetrieved = "Addresses retrieved successfully.";
     public const string UserAddressAdded = "Address added successfully.";
+
+    public const string OrderCreated = "Order created successfully.";
+    public const string OrdersRetrieved = "Orders retrieved successfully.";
+    public const string OrderRetrieved = "Order retrieved successfully.";
+    public const string OrderCancelled = "Order cancelled successfully.";
+
+    public const string DeliveryMethodsRetrieved = "Delivery methods retrieved successfully.";
+    public const string DeliveryMethodRetrieved = "Delivery method retrieved successfully.";
+    public const string DeliveryMethodCreated = "Delivery method created successfully.";
+    public const string DeliveryMethodUpdated = "Delivery method updated successfully.";
+    public const string DeliveryMethodDeleted = "Delivery method deleted successfully.";
 }

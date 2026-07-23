@@ -4,6 +4,7 @@ using ECommerce.Infrastructure.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce.Infrastructure.Migrations.Application
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260723011146_AddOrdersAndDeliveryMethods")]
+    partial class AddOrdersAndDeliveryMethods
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,6 +63,15 @@ namespace ECommerce.Infrastructure.Migrations.Application
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("SupportedCity")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SupportedCountry")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -68,6 +80,8 @@ namespace ECommerce.Infrastructure.Migrations.Application
                     b.HasIndex("DisplayOrder");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("SupportedCountry", "SupportedCity");
 
                     b.ToTable("DeliveryMethods", (string)null);
                 });
@@ -179,12 +193,31 @@ namespace ECommerce.Infrastructure.Migrations.Application
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("PictureUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems", (string)null);
                 });
@@ -383,45 +416,6 @@ namespace ECommerce.Infrastructure.Migrations.Application
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("ECommerce.Domain.Entities.ProductItemOrdered", "ItemOrdered", b1 =>
-                        {
-                            b1.Property<Guid>("OrderItemId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("PictureUrl")
-                                .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("nvarchar(500)")
-                                .HasColumnName("PictureUrl");
-
-                            b1.Property<Guid>("ProductId")
-                                .HasColumnType("uniqueidentifier")
-                                .HasColumnName("ProductId");
-
-                            b1.Property<string>("ProductName")
-                                .IsRequired()
-                                .HasMaxLength(200)
-                                .HasColumnType("nvarchar(200)")
-                                .HasColumnName("ProductName");
-
-                            b1.Property<decimal>("UnitPrice")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("UnitPrice");
-
-                            b1.HasKey("OrderItemId");
-
-                            b1.HasIndex("ProductId");
-
-                            b1.ToTable("OrderItems");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OrderItemId");
-                        });
-
-                    b.Navigation("ItemOrdered")
                         .IsRequired();
                 });
 

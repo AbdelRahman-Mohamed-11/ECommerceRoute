@@ -10,6 +10,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ProductBrand> Brands => Set<ProductBrand>();
     public DbSet<ProductType> Types => Set<ProductType>();
     public DbSet<UserAddress> UserAddresses => Set<UserAddress>();
+    public DbSet<DeliveryMethod> DeliveryMethods => Set<DeliveryMethod>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

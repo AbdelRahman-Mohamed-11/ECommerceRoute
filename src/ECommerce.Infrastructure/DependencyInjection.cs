@@ -115,6 +115,7 @@ public static class DependencyInjection
         services.AddScoped<IDataSeeder, IdentitySeeder>();
         services.AddScoped<IDataSeeder, ProductBrandSeeder>();
         services.AddScoped<IDataSeeder, ProductTypeSeeder>();
+        services.AddScoped<IDataSeeder, DeliveryMethodSeeder>();
 
         services.AddScoped<DatabaseSeeder>();
 
