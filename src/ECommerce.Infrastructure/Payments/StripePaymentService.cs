@@ -1,7 +1,10 @@
+using ECommerce.Domain.Entities;
 using ECommerce.Domain.Errors;
+using ECommerce.Domain.Repositories;
 using ECommerce.Domain.Shared;
 using ECommerce.UseCases.Common.Interfaces;
 using ECommerce.UseCases.Common.Settings;
+using ECommerce.UseCases.Orders.Specifications;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
@@ -10,6 +13,8 @@ namespace ECommerce.Infrastructure.Payments;
 
 public sealed class StripePaymentService(
     IOptions<StripeSettings> stripeOptions,
+    IRepository<Order> orderRepository,
+    IUnitOfWork unitOfWork,
     ILogger<StripePaymentService> logger) : IPaymentService
 {
     private readonly StripeSettings _settings = stripeOptions.Value;
@@ -58,7 +63,7 @@ public sealed class StripePaymentService(
         }
         catch (StripeException ex)
         {
-            logger.LogError(ex, "Stripe create failed for Order {OrderId}: {Message}", orderId, ex.Message);
+            logger.LogError(ex, "Stripe create failed for Order {OrderId}", orderId);
             return Result<PaymentIntentResult>.Failure(OrderErrors.PaymentFailed);
         }
     }
@@ -102,49 +107,51 @@ public sealed class StripePaymentService(
         }
         catch (StripeException ex)
         {
-            logger.LogError(ex, "Stripe update failed for Order {OrderId}: {Message}", orderId, ex.Message);
+            logger.LogError(ex, "Stripe update failed for Order {OrderId}", orderId);
             return Result<PaymentIntentResult>.Failure(OrderErrors.PaymentFailed);
         }
     }
 
-    public Result<StripeWebhookEvent> ParseWebhook(string jsonPayload, string stripeSignature)
+    public async Task PaymentSucceeded(
+        string paymentIntentId,
+        CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(_settings.WebhookSecret)
-            || string.IsNullOrWhiteSpace(jsonPayload)
-            || string.IsNullOrWhiteSpace(stripeSignature))
-            return Result<StripeWebhookEvent>.Failure(OrderErrors.InvalidWebhook);
+        var order = await orderRepository.FirstOrDefaultAsync(
+            new OrderByPaymentIntentSpecification(paymentIntentId, tracking: true),
+            cancellationToken);
 
-        try
+        if (order is null)
         {
-            var stripeEvent = EventUtility.ConstructEvent(
-                jsonPayload,
-                stripeSignature,
-                _settings.WebhookSecret);
-
-            logger.LogInformation(
-                "Webhook received: {Type} | EventId: {Id}",
-                stripeEvent.Type, stripeEvent.Id);
-
-            if (stripeEvent.Data.Object is not PaymentIntent intent)
-            {
-                return Result<StripeWebhookEvent>.Success(new StripeWebhookEvent(
-                    stripeEvent.Type, string.Empty, null, null));
-            }
-
-            intent.Metadata.TryGetValue("OrderId", out var orderId);
-            var failure = intent.LastPaymentError?.Message;
-
-            return Result<StripeWebhookEvent>.Success(new StripeWebhookEvent(
-                stripeEvent.Type,
-                intent.Id,
-                orderId,
-                failure));
+            logger.LogWarning(
+                "PaymentSucceeded: no order for PaymentIntent {Id}", paymentIntentId);
+            return;
         }
-        catch (StripeException ex)
+
+        var paid = order.MarkAsPaid(paymentIntentId);
+        if (paid.IsFailure)
         {
-            logger.LogError(ex, "Webhook signature verification failed.");
-            return Result<StripeWebhookEvent>.Failure(OrderErrors.InvalidWebhook);
+            logger.LogWarning(
+                "PaymentSucceeded MarkAsPaid failed for {OrderId}: {Error}",
+                order.Id, paid.Error.Code);
+            return;
         }
+
+        orderRepository.Update(order);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Payment succeeded for Order {OrderId}, Intent {IntentId}",
+            order.Id, paymentIntentId);
+    }
+
+    public Task PaymentFailed(
+        string paymentIntentId,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogWarning(
+            "Payment failed for PaymentIntent {Id}. Order stays Pending.",
+            paymentIntentId);
+        return Task.CompletedTask;
     }
 
     private Result<PaymentIntentResult> ToResult(PaymentIntent paymentIntent)

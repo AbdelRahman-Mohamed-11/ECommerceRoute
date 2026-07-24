@@ -151,13 +151,14 @@ public sealed class Order : BaseEntity
         if (Status == OrderStatus.Cancelled)
             return Result.Failure(OrderErrors.CannotPayCancelled);
 
-        if (Status is not OrderStatus.Pending and not OrderStatus.Processing)
-        {
-            if (PaymentIntentId == paymentIntentId)
-                return Result.Success();
+        // Idempotent: already paid with same intent
+        if (Status == OrderStatus.Processing
+            && PaymentIntentId == paymentIntentId
+            && PaidAtUtc is not null)
+            return Result.Success();
 
+        if (Status != OrderStatus.Pending)
             return Result.Failure(OrderErrors.InvalidPaymentState);
-        }
 
         if (!string.IsNullOrWhiteSpace(PaymentIntentId)
             && PaymentIntentId != paymentIntentId)
