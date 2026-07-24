@@ -102,8 +102,8 @@ public static class OrderEndpoints
             var result = await sender.Send(new CreateOrderPaymentCommand(id), ct);
             return result.FromResult(httpContext, ApiMessages.PaymentIntentCreated);
         })
-.WithSummary("Create Stripe PaymentIntent for order (or update amount if one already exists)")
-.WithDescription("Uses order.Total (server-side). Calls CreatePaymentIntent when none exists; otherwise UpdatePaymentIntent. Returns clientSecret for Stripe.js.")
+        .WithSummary("Create Stripe PaymentIntent for order (or update amount if one already exists)")
+        .WithDescription("Uses order.Total (server-side). Calls CreatePaymentIntent when none exists; otherwise UpdatePaymentIntent. Returns clientSecret for Stripe.js.")
         .Produces<ApiResponse<PaymentClientSecretResponse>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)

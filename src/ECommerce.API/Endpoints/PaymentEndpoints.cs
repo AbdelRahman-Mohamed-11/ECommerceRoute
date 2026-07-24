@@ -1,9 +1,7 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-using ECommerce.UseCases.Common.Interfaces;
-using ECommerce.UseCases.Common.Settings;
-using Microsoft.Extensions.Options;
-using Stripe;
+using ECommerce.UseCases.Messaging;
+using ECommerce.UseCases.Orders.Commands.HandleStripeWebhook;
 
 namespace ECommerce.API.Endpoints;
 
@@ -19,58 +17,25 @@ public static class PaymentEndpoints
             .WithApiVersionSet(apiVersionSet)
             .HasApiVersion(new ApiVersion(1, 0));
 
-        // Public — Stripe calls this (no JWT)
         group.MapPost("/webhook", async (
             HttpRequest request,
-            IPaymentService paymentService,
-            IOptions<StripeSettings> stripeOptions,
+            ISender sender,
             CancellationToken ct) =>
         {
             var json = await new StreamReader(request.Body).ReadToEndAsync(ct);
             var signature = request.Headers["Stripe-Signature"].ToString();
 
-            if (string.IsNullOrWhiteSpace(signature))
-                return Results.BadRequest("Missing Stripe-Signature header.");
+            var result = await sender.Send(
+                new HandleStripeWebhookCommand(json, signature),
+                ct);
 
-            try
-            {
-                var stripeEvent = EventUtility.ConstructEvent(
-                    json,
-                    signature,
-                    stripeOptions.Value.WebhookSecret);
-
-                switch (stripeEvent.Type)
-                {
-                    case EventTypes.PaymentIntentSucceeded:
-                    {
-                        var succeeded = stripeEvent.Data.Object as PaymentIntent;
-                        if (succeeded is not null)
-                            await paymentService.PaymentSucceeded(succeeded.Id, ct);
-                        break;
-                    }
-
-                    case EventTypes.PaymentIntentPaymentFailed:
-                    {
-                        var failed = stripeEvent.Data.Object as PaymentIntent;
-                        if (failed is not null)
-                            await paymentService.PaymentFailed(failed.Id, ct);
-                        break;
-                    }
-
-                    default:
-                        break;
-                }
-
-                return Results.Ok();
-            }
-            catch (StripeException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
+            return result.IsFailure
+                ? Results.BadRequest()
+                : Results.Ok();
         })
         .AllowAnonymous()
         .WithSummary("Stripe webhook")
-        .WithDescription("Verifies Stripe-Signature; calls PaymentSucceeded / PaymentFailed on the payment service.");
+        .WithDescription("Verifies Stripe-Signature and marks orders paid on payment_intent.succeeded.");
 
         return endpoints;
     }

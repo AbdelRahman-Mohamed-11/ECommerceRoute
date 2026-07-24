@@ -16,10 +16,13 @@ public interface IPaymentService
         Guid orderId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Called from webhook when payment_intent.succeeded.</summary>
+    /// <summary>Verify Stripe-Signature and map to a typed webhook event.</summary>
+    Result<StripeWebhookEvent> ParseWebhook(string jsonPayload, string stripeSignature);
+
+    /// <summary>Called when payment_intent.succeeded.</summary>
     Task PaymentSucceeded(string paymentIntentId, CancellationToken cancellationToken = default);
 
-    /// <summary>Called from webhook when payment_intent.payment_failed.</summary>
+    /// <summary>Called when payment_intent.payment_failed.</summary>
     Task PaymentFailed(string paymentIntentId, CancellationToken cancellationToken = default);
 }
 
@@ -28,3 +31,7 @@ public sealed record PaymentIntentResult(
     string ClientSecret,
     string Status,
     string PublishableKey);
+
+public sealed record StripeWebhookEvent(
+    string EventType,
+    string PaymentIntentId);

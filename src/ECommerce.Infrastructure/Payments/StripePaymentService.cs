@@ -154,6 +154,39 @@ public sealed class StripePaymentService(
         return Task.CompletedTask;
     }
 
+    public Result<StripeWebhookEvent> ParseWebhook(string jsonPayload, string stripeSignature)
+    {
+        if (string.IsNullOrWhiteSpace(_settings.WebhookSecret)
+            || string.IsNullOrWhiteSpace(jsonPayload)
+            || string.IsNullOrWhiteSpace(stripeSignature))
+            return Result<StripeWebhookEvent>.Failure(OrderErrors.InvalidWebhook);
+
+        try
+        {
+            var stripeEvent = EventUtility.ConstructEvent(
+                jsonPayload,
+                stripeSignature,
+                _settings.WebhookSecret);
+
+            logger.LogInformation(
+                "Webhook received: {Type} | EventId: {Id}",
+                stripeEvent.Type, stripeEvent.Id);
+
+            var paymentIntentId = stripeEvent.Data.Object is PaymentIntent intent
+                ? intent.Id
+                : string.Empty;
+
+            return Result<StripeWebhookEvent>.Success(new StripeWebhookEvent(
+                stripeEvent.Type,
+                paymentIntentId));
+        }
+        catch (StripeException ex)
+        {
+            logger.LogError(ex, "Webhook signature verification failed.");
+            return Result<StripeWebhookEvent>.Failure(OrderErrors.InvalidWebhook);
+        }
+    }
+
     private Result<PaymentIntentResult> ToResult(PaymentIntent paymentIntent)
     {
         if (string.IsNullOrWhiteSpace(paymentIntent.ClientSecret))

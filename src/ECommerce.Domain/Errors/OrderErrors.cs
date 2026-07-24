@@ -75,5 +75,5 @@ public static class OrderErrors
         Error.Failure("Order.PaymentFailed", "Payment could not be started.");
 
     public static readonly Error InvalidWebhook =
-        Error.Unauthorized("Order.InvalidWebhook", "Stripe webhook signature is invalid.");
+        Error.Validation("Order.InvalidWebhook", "Stripe webhook signature is invalid.");
 }
