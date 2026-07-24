@@ -14,17 +14,29 @@ public sealed class HandleStripeWebhookCommandHandler(
     IUnitOfWork unitOfWork)
     : IRequestHandler<HandleStripeWebhookCommand, Result>
 {
+    private const string PaymentIntentSucceeded = "payment_intent.succeeded";
+    private const string PaymentIntentFailed = "payment_intent.payment_failed";
+    private const string PaymentIntentRequiresAction = "payment_intent.requires_action";
+
     public async Task<Result> Handle(
         HandleStripeWebhookCommand request,
         CancellationToken cancellationToken)
     {
-        var parsed = paymentService.ParseWebhook(request.JsonBody, request.StripeSignatureHeader);
+        var parsed = paymentService.ParseWebhook(
+            request.JsonBody, request.StripeSignatureHeader);
+
         if (parsed.IsFailure)
             return Result.Failure(parsed.Error);
 
         var evt = parsed.Value;
-        if (string.IsNullOrWhiteSpace(evt.PaymentIntentId)
-            || evt.EventType is not ("payment_intent.succeeded" or "payment_intent.payment_failed"))
+
+        if (string.IsNullOrWhiteSpace(evt.PaymentIntentId))
+            return Result.Success();
+
+        if (evt.EventType is PaymentIntentRequiresAction or PaymentIntentFailed)
+            return Result.Success();
+
+        if (evt.EventType != PaymentIntentSucceeded)
             return Result.Success();
 
         var order = await orderRepository.FirstOrDefaultAsync(
@@ -34,15 +46,12 @@ public sealed class HandleStripeWebhookCommandHandler(
         if (order is null)
             return Result.Failure(OrderErrors.NotFound);
 
-        if (evt.EventType == "payment_intent.succeeded")
-        {
-            var paid = order.MarkAsPaid(evt.PaymentIntentId);
-            if (paid.IsFailure)
-                return paid;
+        var paid = order.MarkAsPaid(evt.PaymentIntentId);
+        if (paid.IsFailure)
+            return paid;
 
-            orderRepository.Update(order);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-        }
+        orderRepository.Update(order);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }

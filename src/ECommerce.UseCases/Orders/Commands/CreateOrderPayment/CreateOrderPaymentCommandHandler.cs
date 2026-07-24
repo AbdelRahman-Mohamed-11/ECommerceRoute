@@ -37,8 +37,27 @@ public sealed class CreateOrderPaymentCommandHandler(
             return Result<PaymentClientSecretResponse>.Failure(OrderErrors.InvalidPaymentState);
 
         var currency = stripeOptions.Value.Currency;
-        var intentResult = await paymentService.CreatePaymentIntentAsync(
-            order.Id, order.Total, currency, cancellationToken);
+        var amountInSmallestUnit = (long)Math.Round(
+            order.Total * 100m, MidpointRounding.AwayFromZero);
+
+        Result<PaymentIntentResult> intentResult;
+
+        if (string.IsNullOrWhiteSpace(order.PaymentIntentId))
+        {
+            intentResult = await paymentService.CreatePaymentIntentAsync(
+                amountInSmallestUnit,
+                currency,
+                order.Id,
+                cancellationToken);
+        }
+        else
+        {
+            intentResult = await paymentService.UpdatePaymentIntentAsync(
+                order.PaymentIntentId,
+                amountInSmallestUnit,
+                order.Id,
+                cancellationToken);
+        }
 
         if (intentResult.IsFailure)
             return Result<PaymentClientSecretResponse>.Failure(intentResult.Error);
@@ -56,6 +75,7 @@ public sealed class CreateOrderPaymentCommandHandler(
                 order.Id,
                 value.PaymentIntentId,
                 value.ClientSecret,
+                value.Status,
                 value.PublishableKey));
     }
 }

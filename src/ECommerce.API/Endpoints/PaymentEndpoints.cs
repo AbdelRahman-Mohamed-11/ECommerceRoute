@@ -27,6 +27,9 @@ public static class PaymentEndpoints
             var json = await reader.ReadToEndAsync(ct);
             var signature = request.Headers["Stripe-Signature"].ToString();
 
+            if (string.IsNullOrWhiteSpace(signature))
+                return Results.BadRequest("Missing Stripe-Signature header.");
+
             var result = await sender.Send(new HandleStripeWebhookCommand(json, signature), ct);
             return result.IsFailure
                 ? Results.BadRequest()
