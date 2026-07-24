@@ -5,7 +5,7 @@ using ECommerce.API.Filters;
 using ECommerce.API.Models;
 using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Types.Dtos;
-using ECommerce.UseCases.Types.Queries;
+using ECommerce.UseCases.Types.Queries.GetAllTypes;
 
 namespace ECommerce.API.Endpoints;
 

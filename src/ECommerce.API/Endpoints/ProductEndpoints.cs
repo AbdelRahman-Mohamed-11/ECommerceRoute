@@ -6,7 +6,8 @@ using ECommerce.API.Models;
 using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Commands.CreateProduct;
 using ECommerce.UseCases.Products.Dtos;
-using ECommerce.UseCases.Products.Queries;
+using ECommerce.UseCases.Products.Queries.GetByIdProduct;
+using ECommerce.UseCases.Products.Queries.GetPagedProducts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Endpoints;

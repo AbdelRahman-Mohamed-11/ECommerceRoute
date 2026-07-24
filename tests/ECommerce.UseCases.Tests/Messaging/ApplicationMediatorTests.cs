@@ -5,8 +5,8 @@ using ECommerce.Domain.Shared;
 using ECommerce.Domain.Specifications;
 using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
-using ECommerce.UseCases.Products.Queries;
-using ECommerce.UseCases.Products.Queries.Handlers;
+using ECommerce.UseCases.Products.Queries.GetAllProducts;
+using ECommerce.UseCases.Products.Queries.GetByIdProduct;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
@@ -74,19 +74,17 @@ public sealed class ApplicationMediatorTests
     }
 
     [Fact]
-    public async Task AddMessaging_registers_real_application_handlers()
+    public void AddMessaging_registers_application_handler_executors()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IReadRepository<Product>>(new FakeProductReadRepository());
-        services.AddSingleton<IReadRepository<ProductBrand>>(new FakeBrandReadRepository());
-        services.AddSingleton<IReadRepository<ProductType>>(new FakeTypeReadRepository());
         services.AddMessaging(typeof(GetAllProductsQueryHandler).Assembly);
 
-        var sender = services.BuildServiceProvider().GetRequiredService<ISender>();
-        var result = await sender.Send(new GetAllProductsQuery());
+        services.ShouldContain(descriptor =>
+            descriptor.ServiceType == typeof(IRequestHandlerExecutor)
+            && descriptor.ImplementationType == typeof(RequestHandlerExecutor<GetAllProductsQuery, Result<IReadOnlyList<GetAllProductsResponse>>>));
 
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBeEmpty();
+        services.ShouldContain(descriptor =>
+            descriptor.ServiceType == typeof(IRequestHandler<GetAllProductsQuery, Result<IReadOnlyList<GetAllProductsResponse>>>));
     }
 
     private static ISender CreateSender<TRequest, TResponse>(

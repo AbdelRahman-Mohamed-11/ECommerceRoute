@@ -6,7 +6,7 @@ using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Specifications;
 
-namespace ECommerce.UseCases.Products.Queries.Handlers;
+namespace ECommerce.UseCases.Products.Queries.GetByIdProduct;
 
 public sealed class GetByIdProductQueryHandler(IReadRepository<Product> repository)
     : IRequestHandler<GetByIdProductQuery, Result<GetByIdProductResponse>>

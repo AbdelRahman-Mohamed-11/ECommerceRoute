@@ -2,11 +2,10 @@ using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Domain.Shared;
 using ECommerce.UseCases.Brands.Dtos;
-using ECommerce.UseCases.Brands.Queries;
 using ECommerce.UseCases.Brands.Specifications;
 using ECommerce.UseCases.Messaging;
 
-namespace ECommerce.UseCases.Brands.Queries.Handlers;
+namespace ECommerce.UseCases.Brands.Queries.GetAllBrands;
 
 public sealed class GetAllBrandsQueryHandler(IReadRepository<ProductBrand> repository)
     : IRequestHandler<GetAllBrandsQuery, Result<IReadOnlyList<GetAllBrandsResponse>>>

@@ -4,9 +4,13 @@ using ECommerce.API.Extensions;
 using ECommerce.API.Filters;
 using ECommerce.API.Models;
 using ECommerce.API.Models.Requests;
-using ECommerce.UseCases.Basket.Commands;
+using ECommerce.UseCases.Basket.Commands.AddBasketItem;
+using ECommerce.UseCases.Basket.Commands.ClearBasket;
+using ECommerce.UseCases.Basket.Commands.MergeBasket;
+using ECommerce.UseCases.Basket.Commands.RemoveBasketItem;
+using ECommerce.UseCases.Basket.Commands.UpdateBasketItemQuantity;
 using ECommerce.UseCases.Basket.Dtos;
-using ECommerce.UseCases.Basket.Queries;
+using ECommerce.UseCases.Basket.Queries.GetBasket;
 using ECommerce.UseCases.Messaging;
 using Microsoft.AspNetCore.Mvc;
 

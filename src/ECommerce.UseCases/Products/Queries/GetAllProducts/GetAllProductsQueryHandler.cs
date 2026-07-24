@@ -5,7 +5,7 @@ using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Specifications;
 
-namespace ECommerce.UseCases.Products.Queries.Handlers;
+namespace ECommerce.UseCases.Products.Queries.GetAllProducts;
 
 public sealed class GetAllProductsQueryHandler(IReadRepository<Product> repository)
     : IRequestHandler<GetAllProductsQuery, Result<IReadOnlyList<GetAllProductsResponse>>>

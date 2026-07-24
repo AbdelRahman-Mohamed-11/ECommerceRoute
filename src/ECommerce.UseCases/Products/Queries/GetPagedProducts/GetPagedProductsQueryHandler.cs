@@ -1,11 +1,11 @@
-﻿using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Domain.Shared;
 using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Dtos;
 using ECommerce.UseCases.Products.Specifications;
 
-namespace ECommerce.UseCases.Products.Queries.Handlers;
+namespace ECommerce.UseCases.Products.Queries.GetPagedProducts;
 
 public sealed class GetPagedProductsQueryHandler(IReadRepository<Product> repository)
     : IRequestHandler<GetPagedProductsQuery, Result<PagedResult<GetAllProductsResponse>>>
@@ -18,21 +18,19 @@ public sealed class GetPagedProductsQueryHandler(IReadRepository<Product> reposi
             request.BrandId,
             request.TypeId);
 
-        var listSpecificatipn = new ProductsPagedSpecification(
+        var listSpecification = new ProductsPagedSpecification(
              request.Search,
              request.BrandId,
              request.TypeId,
              request.SortBy,
              request.SortDescending,
              request.PageNumber,
-             request.PageSize
-            );
-
+             request.PageSize);
 
         var totalCount = await repository.CountAsync(countSpec, cancellationToken);
+        var items = await repository.ListAsync(listSpecification, cancellationToken);
 
-        var items = await repository.ListAsync(listSpecificatipn, cancellationToken);
-
-        return Result<PagedResult<GetAllProductsResponse>>.Success(new PagedResult<GetAllProductsResponse>(items, totalCount));
+        return Result<PagedResult<GetAllProductsResponse>>.Success(
+            new PagedResult<GetAllProductsResponse>(items, totalCount));
     }
 }

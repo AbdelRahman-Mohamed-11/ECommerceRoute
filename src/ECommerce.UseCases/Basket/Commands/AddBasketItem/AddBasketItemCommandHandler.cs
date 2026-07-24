@@ -6,10 +6,7 @@ using ECommerce.UseCases.Basket.Dtos;
 using ECommerce.UseCases.Messaging;
 using ECommerce.UseCases.Products.Specifications;
 
-namespace ECommerce.UseCases.Basket.Commands;
-
-public sealed record AddBasketItemCommand(Guid BuyerId, Guid ProductId, int Quantity)
-    : ICommand<Result<GetBasketResponse>>;
+namespace ECommerce.UseCases.Basket.Commands.AddBasketItem;
 
 public sealed class AddBasketItemCommandHandler(
     IBasketStore basketStore,
@@ -39,7 +36,6 @@ public sealed class AddBasketItemCommandHandler(
         if (addResult.IsFailure)
             return Result<GetBasketResponse>.Failure(addResult.Error);
 
-        // to save in redis
         await basketStore.SaveAsync(basket, cancellationToken);
         return Result<GetBasketResponse>.Success(GetBasketResponse.From(basket));
     }
